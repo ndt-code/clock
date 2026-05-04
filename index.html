@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Study Clock</title>
+    <link rel="icon" type="image/png" href="study-clock.png">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#000000">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script>
+        tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['system-ui','-apple-system','sans-serif'],mono:['ui-monospace','SFMono-Regular','monospace'],oswald:['Oswald','sans-serif']}}}}
+        if ('serviceWorker' in navigator) {window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));}
+    </script>
+</head>
+<body class="text-black dark:text-white transition-all duration-500 opacity-0 flex flex-col" data-active-tab="clock">
+    <header id="main-header" class="w-full px-4 md:px-10 py-4 flex items-center justify-between border-b border-black dark:border-white transition-all shrink-0 z-30">
+        <div id="mobile-ampm" class="view-mob-block font-oswald text-3xl font-bold w-12"></div>
+        <nav class="view-desk justify-start flex-1 gap-2 min-[1050px]:gap-4 overflow-x-auto no-scrollbar" id="main-tabs">
+            <button class="tab-btn px-2 min-[1050px]:px-5 py-2 text-sm font-bold uppercase border-2 border-black dark:border-white hover:border-black dark:hover:border-white bg-black text-white dark:bg-white dark:text-black rounded-xl flex items-center justify-center gap-2 shrink-0 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-clock" title="Clock"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="hidden min-[1050px]:inline">Clock</span></button>
+            <button class="tab-btn px-2 min-[1050px]:px-5 py-2 text-sm font-bold uppercase border-2 border-transparent hover:border-black dark:hover:border-white rounded-xl flex items-center justify-center gap-2 shrink-0 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-timer" title="Timer"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4V2z"></path></svg><span class="hidden min-[1050px]:inline">Timer</span></button>
+            <button class="tab-btn px-2 min-[1050px]:px-5 py-2 text-sm font-bold uppercase border-2 border-transparent hover:border-black dark:hover:border-white rounded-xl flex items-center justify-center gap-2 shrink-0 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-stopwatch" title="Stopwatch"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2 2 M12 22a8 8 0 100-16 8 8 0 000 16z M10 2h4 M18 6l2-2"></path></svg><span class="hidden min-[1050px]:inline">Stopwatch</span></button>
+            <button class="tab-btn px-2 min-[1050px]:px-5 py-2 text-sm font-bold uppercase border-2 border-transparent hover:border-black dark:hover:border-white rounded-xl flex items-center justify-center gap-2 shrink-0 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-alarm" title="Alarm"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg><span class="hidden min-[1050px]:inline">Alarm</span></button>
+            <button class="tab-btn px-2 min-[1050px]:px-5 py-2 text-sm font-bold uppercase border-2 border-transparent hover:border-black dark:hover:border-white rounded-xl flex items-center justify-center gap-2 shrink-0 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-focus" title="Focus"><svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21V14M9 21h6M12 14c-3.866 0-7-2.686-7-6s3.134-6 7-6 7 2.686 7 6-3.134 6-7 6z"></path></svg><span class="hidden min-[1050px]:inline">Focus</span></button>
+        </nav>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto">
+            <div id="music-widget-wrapper" class="relative shrink-0 flex items-center z-20 transition-all duration-300"><button id="btn-toggle-music" class="view-desk w-10 h-10 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl items-center justify-center transition-all duration-300 transform scale-100 opacity-100 pointer-events-auto origin-center focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Music Menu"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></button></div>
+            <button id="btn-todo-desk" class="view-desk p-2 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl transition-colors items-center justify-center w-10 h-10 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="To-do List" title="To-do List"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg></button>
+            <button id="btn-cd-hub-desk" class="view-desk p-2 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl transition-colors items-center justify-center w-10 h-10 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Countdowns" title="Countdowns"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+            <button id="btn-focus" class="view-desk p-2 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl transition-colors items-center justify-center w-10 h-10 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Focus Mode" title="Focus Mode"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+            <button id="btn-music-mobile" class="view-mob w-10 h-10 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Music Menu"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></button>
+            <button id="btn-todo-mob" class="view-mob w-10 h-10 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="To-do List" title="To-do List"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg></button>
+            <button id="btn-cd-hub-mob" class="view-mob w-10 h-10 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Countdowns"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></button>
+            <div class="relative z-50 flex items-center">
+                <button id="btn-settings-menu" class="w-10 h-10 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-xl transition-all flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Settings">
+                    <svg class="w-5 h-5 transition-transform duration-300" id="icon-settings-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>                
+                <div id="settings-popup" class="absolute top-[130%] right-0 mt-2 w-48 p-2 bg-white/70 dark:bg-black/70 backdrop-blur-2xl border-[3px] border-black dark:border-white rounded-3xl shadow-2xl opacity-0 invisible pointer-events-none transition-all duration-300 transform origin-top-right scale-95 flex flex-col gap-2 z-[60] text-black dark:text-white">
+                    <div class="absolute -inset-4 -z-10 bg-white/40 dark:bg-black/40 blur-2xl rounded-3xl pointer-events-none"></div>                   
+                    <button id="btn-toggle-12-24-menu" class="w-full flex items-center justify-between px-4 py-3 font-bold font-oswald text-lg border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-2xl transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white uppercase tracking-widest">
+                        <span class="text-[10px] font-sans font-bold">FORMAT</span>
+                        <span id="lbl-12-24">24</span>
+                    </button>
+                    <button id="theme-toggle-menu" class="w-full flex items-center justify-between px-4 py-3 font-bold text-sm border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-2xl transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white uppercase tracking-widest">
+                        <span class="text-[10px] font-bold">THEME</span>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                            <svg class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path></svg>
+                        </div>
+                    </button>
+                    <button id="btn-export-data" class="w-full flex items-center justify-between px-4 py-3 font-bold text-sm border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-2xl transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white uppercase tracking-widest">
+                        <span class="text-[10px] font-bold">EXPORT</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M7 10l5 5m0 0l5-5m-5 5V3"></path></svg>
+                    </button>
+                    <button id="btn-import-data" class="w-full flex items-center justify-between px-4 py-3 font-bold text-sm border-2 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black rounded-2xl transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white uppercase tracking-widest">
+                        <span class="text-[10px] font-bold">IMPORT</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-5-9l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <button id="btn-unfocus" class="fixed top-6 right-6 z-50 p-3 bg-black text-white dark:bg-white dark:text-black rounded-xl shadow-[0_0_100px_20px_rgba(0,0,0,0.3)] hidden opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" aria-label="Exit Focus Mode"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+    <main class="w-full flex-1 flex flex-col min-h-0 relative">
+        <div class="flex-1 w-full flex flex-col items-center justify-center relative pt-4 pb-2 md:pt-6 md:pb-2 min-h-0">
+            <section id="tab-clock" class="tab-content w-full h-full flex-1 flex flex-col items-center justify-center animate-fade-in pb-4 md:pb-10 min-h-0 overflow-hidden">
+                <div class="view-mob mob-clock-layout justify-center items-center font-oswald font-bold tracking-normal leading-[1.15] w-full px-2 py-2 transition-all duration-300">
+                    <span id="real-h-m" class="text-[min(35vw,40vh)] tabular-nums">00</span>
+                    <span class="text-[min(35vw,40vh)] shrink-0 text-center -translate-y-[0.08em] mx-1 mob-clock-colon">:</span>
+                    <span id="real-m-m" class="text-[min(35vw,40vh)] tabular-nums">00</span>
+                    <span id="real-s-m" class="hidden">00</span>
+                </div>
+                <div class="view-desk flex-row items-baseline justify-center font-oswald font-bold tracking-normal transition-all duration-300 leading-none relative whitespace-nowrap w-full">
+                    <span id="real-h" class="text-[min(20vw,35vh)] w-[1.2em] shrink-0 text-center inline-block tabular-nums">00</span>
+                    <span class="text-[min(20vw,35vh)] shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                    <span id="real-m" class="text-[min(20vw,35vh)] w-[1.2em] shrink-0 text-center inline-block tabular-nums">00</span>
+                    <span class="clock-desk-colon-s text-[min(20vw,35vh)] shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                    <span id="real-s-desktop" class="text-[min(20vw,35vh)] w-[1.2em] shrink-0 text-center inline-block tabular-nums">00</span>
+                    <span id="real-ampm-desktop" class="text-[min(5vw,10vh)] ml-2 lg:ml-4 font-bold uppercase transition-all duration-300"></span>
+                </div>
+                <div id="pinned-cd-container" class="w-full max-w-2xl mx-auto flex flex-col items-center gap-2 md:gap-3 mt-4 md:mt-8 z-10 transition-all empty:hidden"></div>
+            </section>
+            <section id="tab-timer" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-center min-h-0">
+                <div class="desk-layout">
+                    <div class="desk-left-panel relative">
+                        <div id="timer-display-wrapper" class="hidden relative w-full aspect-square max-w-[min(85vw,50vh)] min-[850px]:max-w-[min(50vw,55vh)] flex-col items-center justify-center mx-auto z-10">
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none drop-shadow-sm min-[850px]:hidden" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" style="transform: scaleX(1) rotate(-90deg); transform-origin: center;"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-10 dark:opacity-20"/><circle id="timer-progress" cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="301.59" stroke-dashoffset="0" class="text-black dark:text-white transition-none" stroke-linecap="round"/></svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-10 w-full min-[850px]:relative min-[850px]:inset-auto font-oswald font-bold tracking-normal leading-none pointer-events-none">
+                                <div class="flex flex-row flex-wrap items-end justify-center relative w-full gap-x-1 min-[850px]:mb-0">
+                                    <div class="flex items-baseline leading-none tabular-nums">
+                                        <span id="timer-h-disp" class="cq-timer-text clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                                        <span class="cq-timer-text clock-text-lg shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                                        <span id="timer-m-disp" class="cq-timer-text clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                                        <span class="cq-timer-text clock-text-lg shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                                        <span id="timer-s-disp" class="cq-timer-text clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                                    </div>
+                                    <span id="timer-display-ms" class="absolute top-[105%] left-1/2 -translate-x-1/2 mt-1 min-[850px]:relative min-[850px]:top-auto min-[850px]:left-auto min-[850px]:translate-x-0 min-[850px]:mt-0 cq-timer-ms clock-text-sm w-[1.6em] shrink-0 text-center min-[850px]:text-left inline-block tabular-nums opacity-60 mb-[2vw] min-[850px]:mb-0">.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="timer-input-wrapper" class="w-fit max-w-[95vw] md:max-w-2xl border-4 border-black dark:border-white rounded-[2rem] p-4 md:p-8 flex flex-col items-center shrink-0 mx-auto bg-white dark:bg-black relative z-10 box-border">
+                            <div class="flex justify-center items-center gap-2 md:gap-4 w-full mb-2 md:mb-6">
+                                <div class="flex flex-col items-center gap-2 md:gap-4"><div class="timer-box border-[3px] md:border-4 border-black dark:border-white rounded-2xl md:rounded-3xl flex items-center justify-center focus-within:bg-black focus-within:text-white dark:focus-within:bg-white dark:focus-within:text-black transition-colors"><input type="number" id="timer-h" min="0" max="99" value="0" class="timer-input-field font-bold"></div><span class="text-[9px] md:text-sm font-bold uppercase tracking-widest opacity-80 mt-1">HOURS</span></div>
+                                <span class="text-3xl md:text-5xl font-bold pb-6 md:pb-8 shrink-0 flex-none">:</span>
+                                <div class="flex flex-col items-center gap-2 md:gap-4"><div class="timer-box border-[3px] md:border-4 border-black dark:border-white rounded-2xl md:rounded-3xl flex items-center justify-center focus-within:bg-black focus-within:text-white dark:focus-within:bg-white dark:focus-within:text-black transition-colors"><input type="number" id="timer-m" min="0" max="59" value="25" class="timer-input-field font-bold"></div><span class="text-[9px] md:text-sm font-bold uppercase tracking-widest opacity-80 mt-1">MINS</span></div>
+                                <span class="text-3xl md:text-5xl font-bold pb-6 md:pb-8 shrink-0 flex-none">:</span>
+                                <div class="flex flex-col items-center gap-2 md:gap-4"><div class="timer-box border-[3px] md:border-4 border-black dark:border-white rounded-2xl md:rounded-3xl flex items-center justify-center focus-within:bg-black focus-within:text-white dark:focus-within:bg-white dark:focus-within:text-black transition-colors"><input type="number" id="timer-s" min="0" max="59" value="0" class="timer-input-field font-bold"></div><span class="text-[9px] md:text-sm font-bold uppercase tracking-widest opacity-80 mt-1">SECS</span></div>
+                            </div>
+                            <div id="timer-presets-container" class="flex flex-wrap justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-bold font-mono items-center w-full"></div>
+                        </div>
+                    </div>
+                    <div class="desk-right-panel">
+                        <div id="desktop-timer-controls" class="desk-controls w-full">
+                            <button id="btn-timer-start-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white bg-black text-white dark:bg-white dark:text-black hover:opacity-80">Start</button>
+                            <button id="btn-timer-pause-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">Pause</button>
+                            <button id="btn-timer-reset-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">Reset</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-mob w-full flex flex-col items-center shrink-0 mt-4 px-4 max-w-md mx-auto pb-safe mb-2">
+                    <div id="mobile-timer-controls" class="flex flex-row justify-center items-center gap-3 w-full shrink-0">
+                        <button id="btn-timer-start-m" class="flex-1 h-14 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold rounded-2xl text-base uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Start</button>
+                        <button id="btn-timer-pause-m" class="flex-1 h-14 border-4 border-black dark:border-white font-bold rounded-2xl text-base uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Pause</button>
+                        <button id="btn-timer-reset-m" class="flex-1 h-14 border-4 border-black dark:border-white font-bold rounded-2xl text-base uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Reset</button>
+                    </div>
+                </div>
+            </section>
+            <section id="tab-stopwatch" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-center min-h-0">
+                <div class="desk-layout">
+                    <div class="desk-left-panel relative">
+                        <div id="sw-digital-view" class="flex flex-row flex-wrap items-end justify-center w-full gap-x-1 font-oswald font-bold tracking-normal leading-none z-10">
+                            <div class="flex items-baseline leading-none tabular-nums">
+                                <span id="sw-h-disp" class="max-[849px]:text-[22vw] clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                                <span class="max-[849px]:text-[22vw] clock-text-lg shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                                <span id="sw-m-disp" class="max-[849px]:text-[22vw] clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                                <span class="max-[849px]:text-[22vw] clock-text-lg shrink-0 text-center inline-block -translate-y-[0.08em] mx-1">:</span>
+                                <span id="sw-s-disp" class="max-[849px]:text-[22vw] clock-text-lg w-[1.3em] shrink-0 text-center inline-block tabular-nums">00</span>
+                            </div>
+                            <span id="sw-display-ms" class="max-[849px]:text-[12vw] clock-text-sm opacity-60 tabular-nums leading-none mb-[2vw] md:mb-0 w-[1.6em] text-left shrink-0 inline-block">.00</span>
+                        </div>
+                    </div>
+                    <div class="desk-right-panel">
+                        <div class="w-full desk-lap-list pr-2 rounded-xl border border-transparent"><ul id="lap-list" class="w-full font-mono text-lg space-y-2"></ul></div>
+                        <div id="desktop-sw-controls" class="desk-controls w-full">
+                            <button id="btn-sw-start-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white bg-black text-white dark:bg-white dark:text-black hover:opacity-80">Start</button>
+                            <button id="btn-sw-pause-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">Pause</button>
+                            <button id="btn-sw-lap-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">Lap</button>
+                            <button id="btn-sw-reset-d" class="flex-1 h-16 text-xl border-[4px] border-black dark:border-white font-bold rounded-2xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">Reset</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-mob flex-1 flex flex-col shrink-0 w-full px-4 max-w-md mx-auto mt-2 min-h-0">
+                    <div class="flex-1 min-h-0 overflow-y-auto pr-2 mb-4 w-full"><ul id="lap-list-mobile" class="w-full font-mono text-base space-y-2"></ul></div>
+                    <div id="mobile-sw-controls" class="flex flex-row justify-center items-center gap-3 w-full shrink-0 mt-auto pb-safe mb-2">
+                        <button id="btn-sw-start-m" class="flex-1 h-14 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold rounded-2xl text-base uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Start</button>
+                        <button id="btn-sw-pause-m" class="flex-1 h-14 border-4 border-black dark:border-white font-bold rounded-2xl text-base uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Pause</button>
+                        <button id="btn-sw-lap-m" class="flex-1 h-14 border-4 border-black dark:border-white font-bold rounded-2xl text-base uppercase tracking-widest hidden transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Lap</button>
+                        <button id="btn-sw-reset-m" class="flex-1 h-14 border-4 border-black dark:border-white font-bold rounded-2xl text-base uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Reset</button>
+                    </div>
+                </div>
+            </section>
+            <section id="tab-alarm" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-start pt-2 md:pt-8 overflow-y-auto no-scrollbar animate-fade-in pb-20 md:pb-4 gap-6 lg:gap-16 max-w-5xl mx-auto min-h-0">
+                <div id="alarm-left-panel" class="flex flex-col w-fit max-w-[95vw] md:max-w-full shrink-0 mx-auto self-center">
+                    <div class="alarm-wrapper-inner w-fit max-w-full border-4 border-black dark:border-white rounded-[2rem] md:rounded-[3rem] p-3 md:py-8 md:px-4 lg:px-8 flex flex-col items-center shrink-0 box-border mx-auto">
+                        <h2 class="text-xl md:text-2xl font-bold uppercase mb-4 md:mb-6 opacity-80 tracking-widest text-center font-oswald">Set Alarm</h2>
+                        <div class="flex flex-col items-center w-full gap-4 md:gap-6">
+                            <div id="alarm-input-row" class="flex flex-row items-start gap-4 sm:gap-6 w-full justify-center">
+                                <div class="flex flex-col items-center">
+                                    <input type="number" id="alarm-h" min="0" max="23" value="0" class="alarm-time-input p-0 m-0 box-border text-center bg-transparent border-black dark:border-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black font-oswald transition-all">
+                                    <span class="text-[9px] md:text-sm mt-2 font-bold uppercase tracking-widest opacity-80">Hours</span>
+                                </div>
+                                <div class="alarm-colon-wrapper px-1 shrink-0">
+                                    <span class="text-3xl sm:text-4xl md:text-[min(5vw,6vh)] font-bold leading-none">:</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="number" id="alarm-m" min="0" max="59" value="0" class="alarm-time-input p-0 m-0 box-border text-center bg-transparent border-black dark:border-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black font-oswald transition-all">
+                                    <span class="text-[9px] md:text-sm mt-2 font-bold uppercase tracking-widest opacity-80">Mins</span>
+                                </div>
+                                <button id="btn-add-alarm-m" class="alarm-add-m alarm-add-btn px-4 sm:px-8 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold text-base sm:text-lg uppercase tracking-widest transition-all hover:opacity-80 flex-col justify-center items-center shrink-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">
+                                    <span class="hidden min-[380px]:inline">Add</span><span class="min-[380px]:hidden text-3xl font-normal leading-none">+</span>
+                                </button>
+                            </div>
+                            <button id="btn-add-alarm-d" class="alarm-add-d w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-2xl text-xl uppercase tracking-widest transition-all hover:opacity-80 items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Add Alarm</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="alarm-right-panel" class="flex flex-col w-full flex-1 min-h-0 md:h-full px-4 md:px-0 max-w-xl mx-auto md:max-w-none">
+                    <h2 class="text-xl md:text-2xl font-bold uppercase mb-4 md:mb-6 opacity-80 tracking-widest text-center shrink-0 font-oswald">Your Alarms</h2>
+                    <div class="w-full flex-1 md:min-h-0 overflow-y-visible md:overflow-y-auto rounded-xl pr-2 md:pr-4 no-scrollbar border-y border-transparent">
+                        <ul id="alarm-list" class="space-y-3 md:space-y-4 pb-1"></ul>
+                    </div>
+                </div>
+            </section>
+           <section id="tab-focus" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-center min-h-0 overflow-hidden relative">
+                <button id="btn-toggle-focus-todo" class="hidden min-[1000px]:block absolute top-4 right-4 z-20 px-5 py-2 border-2 border-black dark:border-white rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white bg-white dark:bg-black shadow-md">To-do List</button>
+                <div id="focus-layout-container" class="flex flex-row w-full h-full items-stretch justify-center">
+                    <div id="focus-clock-side" class="flex flex-col items-center justify-center w-full transition-[width] duration-300 ease-out shrink-0 relative overflow-hidden max-[849px]:!w-full">
+                        <div id="focus-input-wrapper" class="w-fit max-w-[95vw] md:max-w-3xl max-h-[83dvh] border-4 border-black dark:border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 flex flex-col items-center shrink-0 mx-auto bg-white dark:bg-black relative z-10 box-border">
+                            <h2 class="text-2xl md:text-3xl font-bold uppercase mb-4 md:mb-6 opacity-80 tracking-widest text-center shrink-0">Study Focus</h2>
+                            
+                            <div class="flex flex-col gap-4 md:gap-6 w-full flex-1 overflow-y-auto no-scrollbar py-2">
+                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Focus Time</label><div class="flex items-center gap-2"><input type="number" id="focus-h" value="0" min="0" max="99" class="w-14 h-14 md:w-20 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"> <span class="text-2xl md:text-3xl font-bold">:</span> <input type="number" id="focus-m" value="25" min="0" max="59" class="w-14 h-14 md:w-20 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div></div>
+                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Break Time</label><input type="number" id="focus-bm" value="5" min="0" max="99" class="w-20 h-14 md:w-28 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
+                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Repeats</label><input type="number" id="focus-rep" value="3" min="1" max="15" class="w-20 h-14 md:w-28 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
+                            </div>
+
+                            <div id="focus-presets-container" class="flex flex-wrap justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-bold font-mono items-center w-full mt-4 shrink-0"></div>
+                            <button id="btn-start-focus" class="mt-6 w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 md:py-5 rounded-2xl text-lg md:text-xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:opacity-80 shrink-0">Start Focus</button>
+                        </div>
+                        <div id="focus-display-wrapper" class="hidden relative w-full max-w-[76vmin] md:max-w-[76vmin] aspect-square flex-col items-center justify-center mx-auto z-10" style="container-type: inline-size;">
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none drop-shadow-sm overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><g style="transform: scaleX(1) rotate(-90deg); transform-origin: 50px 50px;"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-10 dark:opacity-20"/><circle id="focus-progress" cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="301.59" stroke-dashoffset="0" class="text-black dark:text-white transition-all duration-100 ease-linear" stroke-linecap="round"/></g><circle id="focus-dot-break" cx="50" cy="2" r="3" fill="currentColor" class="text-black dark:text-white"/><circle cx="50" cy="2" r="3" fill="currentColor" class="text-black dark:text-white"/></svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-10 w-[85%] h-[85%] m-auto font-oswald tracking-normal leading-tight text-center"><span id="focus-status-text" class="text-[8cqw] font-bold uppercase opacity-80 mb-2 md:mb-4 tracking-widest">PREP</span><span id="focus-time-disp" class="text-[32cqw] font-bold tabular-nums leading-none">00:00</span><span id="focus-rep-disp" class="text-[6cqw] font-bold uppercase opacity-60 mt-4 md:mt-6 tracking-widest">Rep: 1/3</span><div class="mt-4 md:mt-8 flex gap-2 justify-center w-full px-4 z-20 relative"><button id="btn-focus-skip" class="hidden px-4 py-2 text-[3cqw] border-2 border-black dark:border-white rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">Skip</button><button id="btn-focus-pause" class="hidden px-4 py-2 text-[3cqw] border-2 border-black dark:border-white rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">Pause</button><button id="btn-show-quit-modal" class="px-4 py-2 text-[3cqw] border-2 border-black dark:border-white rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">Quit</button></div></div>
+                        </div>
+                        <div id="focus-alert-modal" class="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-xl z-[20] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+                            <div class="border-8 border-black dark:border-white bg-white dark:bg-black rounded-[2rem] p-6 w-[95%] max-w-sm text-center shadow-2xl flex flex-col items-center">
+                                <h3 id="focus-alert-title" class="text-3xl md:text-4xl font-bold uppercase mb-2 animate-pulse tracking-widest font-oswald text-black dark:text-white">ALERT!</h3>
+                                <p id="focus-alert-msg" class="text-sm md:text-base mb-6 font-bold opacity-80 uppercase tracking-wide">Phase completed.</p>
+                                
+                                <div id="focus-alert-main-actions" class="flex gap-2 w-full">
+                                    <button id="btn-focus-show-add" class="flex-1 border-4 border-black dark:border-white font-bold py-3 rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all uppercase text-base tracking-widest focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Add ⏰</button>
+                                    <button id="alert-focus-confirm" class="flex-1 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl hover:bg-transparent hover:text-black dark:hover:bg-transparent dark:hover:text-white transition-all uppercase text-base tracking-widest focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">OKAY!</button>
+                                </div>                                
+                                <div id="alert-focus-add-panel" class="hidden flex-col gap-4 w-full">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <div class="flex flex-col items-center">
+                                            <input type="number" id="foc-add-m" min="0" max="60" value="0" class="w-16 h-20 border-[4px] border-black dark:border-white rounded-xl text-center text-4xl font-bold bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors">
+                                            <span class="text-[10px] font-bold uppercase mt-2 opacity-70 tracking-widest">Mins</span>
+                                        </div>
+                                        <span class="text-3xl font-bold pb-6">:</span>
+                                        <div class="flex flex-col items-center">
+                                            <input type="number" id="foc-add-s" min="0" max="59" value="0" class="w-16 h-20 border-[4px] border-black dark:border-white rounded-xl text-center text-4xl font-bold bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors">
+                                            <span class="text-[10px] font-bold uppercase mt-2 opacity-70 tracking-widest">Secs</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2 w-full">
+                                        <button id="btn-focus-add-apply" class="flex-[2] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Add ⏰</button>
+                                        <button id="btn-focus-add-end" class="flex-1 border-4 border-black dark:border-white font-bold py-3 rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">End</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="pause-modal" class="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-xl z-[20] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+                            <div class="border-8 border-black dark:border-white bg-white dark:bg-black rounded-[2rem] p-6 w-[95%] max-w-sm text-center shadow-2xl flex flex-col items-center">
+                                <h3 class="text-3xl md:text-4xl font-bold uppercase mb-2 animate-pulse tracking-widest font-oswald">PAUSED</h3><br>
+                                <div class="flex gap-2 w-full">
+                                    <button id="btn-focus-resume" class="flex-[2] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Resume</button>
+                                    <button id="btn-focus-quit-pause" class="flex-1 border-4 border-red-500 text-red-500 font-bold py-3 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Quit</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="quit-modal" class="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-xl z-[20] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+                            <div class="border-8 border-black dark:border-white bg-white dark:bg-black rounded-[2rem] p-6 w-[95%] max-w-sm text-center shadow-2xl flex flex-col items-center">
+                                <h3 class="text-3xl md:text-4xl font-bold uppercase mb-2 tracking-widest font-oswald text-red-500">WARNING</h3><br>
+                                <div class="flex flex-col gap-2 w-full">
+                                    <button id="btn-focus-skip-modal" class="w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">End Current Phase</button>
+                                    <button id="btn-focus-quit-all" class="w-full border-4 border-red-500 text-red-500 font-bold py-3 rounded-xl hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Quit All</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="congrats-modal" class="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-xl z-[20] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+                            <div class="border-8 border-black dark:border-white bg-white dark:bg-black rounded-[2rem] p-6 w-[95%] max-w-sm text-center shadow-2xl flex flex-col items-center">
+                                <h3 class="text-3xl md:text-4xl font-bold uppercase mb-2 animate-bounce tracking-widest font-oswald text-yellow-500">CONGRATS!</h3>
+                                <p class="text-sm md:text-base mb-6 font-bold opacity-80 uppercase tracking-wide">Finish your work!</p>
+                                <button id="btn-close-congrats" class="w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">OKAY!</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="focus-todo-side" class="w-0 opacity-0 flex flex-col h-full border-black dark:border-white transition-all duration-300 ease-out overflow-hidden shrink-0 bg-white dark:bg-black border-l-0 z-10 relative max-[999px]:!hidden max-[999px]:!w-0 max-[999px]:!opacity-0 max-[999px]:!border-l-0">
+                        <div class="w-full p-6 pt-20 pb-10 h-full overflow-y-auto no-scrollbar flex flex-col">
+                            <div id="focus-todo-content" class="flex flex-col gap-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <nav id="mobile-nav" class="view-mob w-full flex justify-around items-center bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 pb-safe z-30 shrink-0">
+        <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-clock">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Clock</span>
+        </button>
+        
+        <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-gray-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-timer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 2h12v6l-4 4 4 4v6H6v-6l4-4-4-4V2z"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Timer</span>
+        </button>
+        
+        <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-gray-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-stopwatch">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2 2 M12 22a8 8 0 100-16 8 8 0 000 16z M10 2h4 M18 6l2-2"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Stopwatch</span>
+        </button>
+        
+        <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-gray-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-alarm">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Alarm</span>
+        </button>
+        
+        <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-gray-400 dark:text-gray-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-focus">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21V14M9 21h6M12 14c-3.866 0-7-2.686-7-6s3.134-6 7-6 7 2.686 7 6-3.134 6-7 6z"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Focus</span>
+        </button>
+    </nav>
+    <div id="music-panel" class="fixed inset-x-0 bottom-0 md:inset-y-0 md:inset-x-auto md:right-0 w-full md:w-[400px] bg-white dark:bg-black border-t-4 md:border-l-4 md:border-t-0 border-black dark:border-white rounded-t-3xl md:rounded-none md:rounded-l-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] md:shadow-[-20px_0_50px_rgba(0,0,0,0.2)] p-6 z-[50] flex flex-col max-h-[85vh] md:max-h-none md:h-full transition-all duration-300 ease-in-out translate-y-[120%] md:translate-y-0 md:translate-x-[120%]">
+        <div class="flex justify-between items-center mb-6 shrink-0"><h3 class="font-bold uppercase text-base tracking-widest flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>Music Player</h3><button id="btn-close-music" aria-label="Close" class="opacity-50 hover:opacity-100 p-2 font-bold text-lg leading-none focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button></div>
+        <div id="media-top-section" class="w-full shrink-0 flex flex-col">
+            <div class="relative w-full mb-4 flex flex-col" id="media-input-wrapper"><input type="text" id="music-url" placeholder="Paste YouTube link..." class="w-full bg-transparent border border-gray-400 rounded-xl p-3 text-sm mb-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono"><button id="btn-load-music" class="w-full border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl text-sm uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Load Media</button></div>
+            <div id="playlist-warning" class="hidden text-[10px] text-red-500 font-bold tracking-widest text-center shrink-0 mb-2">Playlist Active: Loading new media removes queue</div>
+        </div>
+        <div id="mobile-vid-placeholder" class="w-[75%] mx-auto aspect-video mb-4 hidden shrink-0 rounded-xl overflow-hidden transition-all duration-300"></div>
+        <div id="custom-player-controls" class="flex flex-col gap-4 flex-1 min-h-0">
+            <p id="yt-status" class="text-xs text-center font-bold text-red-500 mb-1 shrink-0"></p>
+            <div class="flex flex-col gap-1 w-full shrink-0"><input type="range" id="yt-timeline" min="0" max="100" value="0" class="w-full" style="--percent: 0%;"><div class="flex justify-between text-xs font-mono font-bold opacity-70 mt-1"><span id="yt-time-current">0:00</span><span id="yt-time-total">0:00</span></div></div>
+            <div class="flex flex-col items-center gap-4 mt-2 shrink-0">
+                <div class="flex items-center justify-center gap-2"><button id="btn-yt-skip-b10" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold text-xs focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">-10</button><button id="btn-yt-skip-b5" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold text-xs focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">-5</button><button id="btn-yt-prev" aria-label="Previous" class="w-10 h-10 flex items-center justify-center border-2 border-black dark:border-white rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg></button><button id="btn-yt-play" aria-label="Play/Pause" class="w-14 h-14 flex items-center justify-center border-4 border-black dark:border-white rounded-2xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg id="icon-play" class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg><svg id="icon-pause" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg></button><button id="btn-yt-next" aria-label="Next" class="w-10 h-10 flex items-center justify-center border-2 border-black dark:border-white rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg></button><button id="btn-yt-skip-f5" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold text-xs focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">+5</button><button id="btn-yt-skip-f10" class="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors font-bold text-xs focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">+10</button></div>
+                <div class="flex items-center gap-2 w-full px-4"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg><input type="range" id="yt-volume" min="0" max="100" value="100" class="w-full h-2 flex-1" style="--percent: 100%;"></div>
+            </div>
+            <div class="mt-4 flex flex-col border-t border-gray-300 dark:border-gray-700 pt-4 flex-1 min-h-0">
+                <div class="flex items-center justify-between mb-3 shrink-0"><span class="text-xs font-bold uppercase tracking-widest opacity-70">Up Next</span><div class="flex items-center gap-3 shrink-0"><span id="queue-count" class="text-xs font-mono font-bold opacity-50">0 Tracks</span><button id="btn-clear-queue" class="opacity-60 hover:opacity-100 hover:text-red-500 transition-colors flex shrink-0 items-center justify-center text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" title="Clear Queue"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button><button id="btn-toggle-yt-vid" class="opacity-50 hover:opacity-100 transition-opacity w-5 h-5 flex shrink-0 items-center justify-center text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" title="Toggle Video"></button><button id="btn-shuffle-mode" class="opacity-50 hover:opacity-100 transition-opacity w-5 h-5 flex shrink-0 items-center justify-center text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" title="Shuffle"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></button><button id="btn-loop-mode" class="opacity-50 hover:opacity-100 transition-opacity w-5 h-5 flex shrink-0 items-center justify-center text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" title="Loop Mode"></button></div></div>
+                <ul id="yt-playlist-ui" class="flex flex-col gap-2 overflow-y-auto pr-2 no-scrollbar flex-1 min-h-0"></ul>
+                <div class="mt-3 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-widest opacity-40 font-bold shrink-0"><svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Click 👁️ to show video</span></div>
+            </div>
+        </div>
+    </div>
+    <div id="todo-sidebar" class="fixed inset-x-0 bottom-0 md:inset-y-0 md:inset-x-auto md:right-0 w-full md:w-[400px] bg-white dark:bg-black border-t-4 md:border-l-4 md:border-t-0 border-black dark:border-white rounded-t-3xl md:rounded-none md:rounded-l-3xl shadow-2xl p-6 z-[50] flex flex-col max-h-[85vh] md:max-h-none md:h-full transition-all duration-300 ease-in-out translate-y-[120%] md:translate-y-0 md:translate-x-[120%]">
+        <div class="flex justify-between items-center mb-6 shrink-0">
+            <div class="flex items-center gap-2">
+                <button id="btn-todo-back" class="hidden opacity-50 hover:opacity-100 p-2 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                <h3 class="font-bold uppercase text-xl tracking-widest font-oswald">To-do List</h3>
+            </div>
+            <button id="btn-close-todo" class="opacity-50 hover:opacity-100 p-2 font-bold text-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button>
+        </div>
+        <div id="todo-main-view" class="flex flex-col flex-1 min-h-0">
+            <div class="flex justify-between items-stretch mb-4 gap-2 shrink-0">
+                <button id="btn-add-cat-new" class="flex-1 border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold px-4 py-3 rounded-xl hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white uppercase text-sm tracking-widest">+ Category</button>
+                <button id="btn-todo-sort" class="border-2 border-black dark:border-white w-14 rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white flex items-center justify-center font-bold text-xl" title="Toggle Sort">↓</button>
+            </div>
+            <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-6 pb-4">
+                <div id="todo-pinned-section" class="hidden flex-col gap-2"><h4 class="text-[10px] font-bold uppercase opacity-50 tracking-widest border-b-2 border-black/10 dark:border-white/10 pb-1">Pinned</h4><ul id="todo-category-pinned-list" class="flex flex-col gap-3"></ul></div>
+                <div id="todo-active-section" class="hidden flex-col gap-2"><h4 class="text-[10px] font-bold uppercase opacity-50 tracking-widest border-b-2 border-black/10 dark:border-white/10 pb-1">Active</h4><ul id="todo-category-list" class="flex flex-col gap-3"></ul></div>
+                <div id="todo-completed-cat-section" class="hidden flex-col gap-2"><h4 class="text-[10px] font-bold uppercase opacity-50 tracking-widest border-b-2 border-black/10 dark:border-white/10 pb-1">Completed</h4><ul id="todo-category-completed-list" class="flex flex-col gap-3 opacity-60 grayscale-[50%]"></ul></div>
+            </div>
+        </div>
+        <div id="todo-detail-view" class="hidden flex-col flex-1 min-h-0">
+            <input type="text" id="todo-detail-title-input" placeholder="Category Name..." class="text-2xl md:text-3xl font-bold font-oswald mb-4 uppercase border-b-2 border-black dark:border-white pb-2 bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white w-full shrink-0">
+            <div class="flex gap-2 mb-4 shrink-0">
+                <input type="text" id="todo-task-input" placeholder="Add task..." class="flex-1 bg-transparent border-2 border-gray-400 rounded-xl p-3 text-base focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono">
+                <button id="btn-add-task" class="border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold px-4 rounded-xl hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">+</button>
+            </div>
+            <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-6 pb-4">
+                <ul id="todo-task-list" class="flex flex-col gap-2"></ul>
+                <div id="todo-completed-task-section" class="hidden flex-col gap-2 mt-2">
+                    <h4 class="text-[10px] font-bold uppercase opacity-50 tracking-widest border-b-2 border-black/10 dark:border-white/10 pb-1">Completed</h4>
+                    <ul id="todo-task-completed-list" class="flex flex-col gap-2 opacity-60 grayscale-[50%]"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="yt-global-container" class="fixed pointer-events-none z-[90] transition-opacity duration-300 opacity-0 hidden"><div id="yt-player-wrapper" class="pointer-events-auto bg-black w-full h-full rounded-xl md:rounded-3xl overflow-hidden border-2 md:border-4 border-black dark:border-white shadow-[0_0_150px_rgba(0,0,0,0.5)] transition-none"><div id="yt-player-container" class="w-full h-full pointer-events-auto"></div></div></div>
+    <div id="music-backdrop" class="fixed inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-md z-[40] hidden transition-all duration-300"></div>
+    <div id="alert-modal" class="modal-bg fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-[80] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+        <div class="border-8 border-black dark:border-white bg-white dark:bg-black rounded-[3rem] p-6 md:p-10 w-[92%] max-w-lg text-center shadow-2xl flex flex-col items-center">
+            <h3 id="alert-title" class="text-4xl md:text-5xl font-bold uppercase mb-2 animate-pulse tracking-widest font-oswald">TIME'S UP!</h3>
+            <p id="alert-msg" class="text-base md:text-lg mb-6 font-bold opacity-80 uppercase tracking-wide">Time to take a break or switch tasks.</p>
+            <div id="alert-snooze-alarm" class="hidden flex-col gap-3 w-full">
+                <div class="flex justify-center gap-2 w-full">
+                    <button data-action="snooze" data-time="3" class="flex-1 border-4 border-black dark:border-white rounded-xl py-3 font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">3 Min</button>
+                    <button data-action="snooze" data-time="5" class="flex-1 border-4 border-black dark:border-white rounded-xl py-3 font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">5 Min</button>
+                    <button data-action="snooze" data-time="10" class="flex-1 border-4 border-black dark:border-white rounded-xl py-3 font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white tracking-widest">10 Min</button>
+                </div>
+                <button id="btn-stop-alert-1" class="w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Stop</button>
+            </div>
+            <div id="alert-snooze-timer" class="hidden flex-col gap-6 w-full">
+                <div class="flex justify-center items-center gap-2 md:gap-3">
+                    <div class="flex flex-col items-center">
+                        <input type="number" id="snooze-t-h" min="0" max="99" value="0" class="w-24 md:w-28 h-28 md:h-32 border-[4px] md:border-[5px] border-black dark:border-white rounded-2xl md:rounded-[2rem] text-center text-4xl md:text-5xl font-bold bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors">
+                        <span class="text-xs md:text-sm font-bold uppercase mt-3 opacity-70 tracking-widest">Hrs</span>
+                    </div>
+                    <span class="text-4xl md:text-5xl font-bold pb-6 md:pb-8">:</span>
+                    <div class="flex flex-col items-center">
+                        <input type="number" id="snooze-t-m" min="0" max="59" value="0" class="w-24 md:w-28 h-28 md:h-32 border-[4px] md:border-[5px] border-black dark:border-white rounded-2xl md:rounded-[2rem] text-center text-4xl md:text-5xl font-bold bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors">
+                        <span class="text-xs md:text-sm font-bold uppercase mt-3 opacity-70 tracking-widest">Mins</span>
+                    </div>
+                    <span class="text-4xl md:text-5xl font-bold pb-6 md:pb-8">:</span>
+                    <div class="flex flex-col items-center">
+                        <input type="number" id="snooze-t-s" min="0" max="59" value="0" class="w-24 md:w-28 h-28 md:h-32 border-[4px] md:border-[5px] border-black dark:border-white rounded-2xl md:rounded-[2rem] text-center text-4xl md:text-5xl font-bold bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors">
+                        <span class="text-xs md:text-sm font-bold uppercase mt-3 opacity-70 tracking-widest">Secs</span>
+                    </div>
+                </div>
+                <div class="flex gap-3 w-full">
+                    <button id="btn-snooze-timer-apply" class="flex-[2] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-xl hover:opacity-80 transition-all uppercase tracking-widest text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Set</button>
+                    <button id="btn-stop-alert-2" class="flex-1 border-4 border-black dark:border-white font-bold py-4 rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all uppercase tracking-widest text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Stop</button>
+                </div>
+            </div>
+            <div id="alert-main-btns" class="flex gap-3 w-full">
+                <button id="btn-show-snooze" class="flex-1 border-4 border-black dark:border-white rounded-2xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all uppercase font-bold text-lg md:text-xl tracking-widest focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white py-4">Snooze</button>
+                <button id="btn-stop-alert-3" class="flex-[1.5] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-2xl hover:bg-transparent hover:text-black dark:hover:bg-transparent dark:hover:text-white transition-all uppercase text-lg md:text-xl tracking-widest focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Stop</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preset-modal" class="modal-bg fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-[70] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4 overscroll-none">
+        <div class="border-4 border-black dark:border-white bg-white dark:bg-black rounded-3xl p-6 md:p-8 w-[92%] max-w-sm shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h3 class="text-xl md:text-2xl font-bold uppercase tracking-widest">Edit Presets</h3>
+                <button id="btn-close-presets" class="font-bold text-2xl opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button>
+            </div>
+            <p class="text-[10px] md:text-xs mb-4 opacity-70 uppercase font-bold tracking-wider shrink-0">Scroll or click to edit.</p>
+            <div id="preset-edit-list" class="flex flex-col gap-3 flex-1 overflow-y-auto no-scrollbar pb-2 relative"></div>
+            <button id="btn-add-preset" class="w-full mt-2 border-2 border-dashed border-gray-400 dark:border-gray-600 text-gray-500 dark:text-gray-400 font-bold py-3 rounded-xl uppercase tracking-widest hover:border-black hover:text-black dark:hover:border-white dark:hover:text-white transition-all shrink-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">+</button>
+            <button id="btn-save-presets" class="w-full mt-6 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-xl uppercase tracking-widest hover:opacity-80 transition-all shrink-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Save & Close</button>
+        </div>
+    </div>
+
+    <div id="focus-preset-modal" class="modal-bg fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-[70] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+        <div class="border-4 border-black dark:border-white bg-white dark:bg-black rounded-3xl p-6 md:p-8 w-[92%] max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h3 class="text-xl md:text-2xl font-bold uppercase tracking-widest">Edit Presets</h3>
+                <button id="btn-close-focus-preset-1" aria-label="Close" class="font-bold text-2xl opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button>
+            </div>
+            <div id="focus-preset-edit-list" class="flex flex-col gap-3 flex-1 overflow-y-auto no-scrollbar pb-2"></div>
+            <button id="btn-add-focus-preset" class="w-full mt-2 border-2 border-dashed border-gray-400 font-bold py-3 rounded-xl uppercase tracking-widest hover:border-black dark:hover:border-white transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">+</button>
+            <button id="btn-close-focus-preset-2" class="w-full mt-6 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-xl uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Save & Close</button>
+        </div>
+    </div>
+
+    <div id="cd-hub-modal" class="modal-bg fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-[70] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+        <div class="border-4 border-black dark:border-white bg-white dark:bg-black rounded-3xl p-6 md:p-8 w-[95%] md:w-[85%] max-w-6xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6 shrink-0 gap-4">
+                <h3 class="text-2xl md:text-3xl font-bold uppercase tracking-widest">Events</h3>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div class="relative" id="cd-sort-wrapper">
+                        <button id="btn-cd-sort" class="flex items-center gap-2 bg-transparent border-2 border-black dark:border-white rounded-xl px-4 py-2 font-bold text-xs uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black">
+                            <span id="cd-sort-label">Upcoming</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="cd-sort-menu" class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl shadow-2xl flex flex-col overflow-hidden z-[400] opacity-0 pointer-events-none transition-opacity duration-200">
+                            <button class="w-full text-left px-4 py-3 font-bold text-xs uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-sort="target_asc">Upcoming</button>
+                            <button class="w-full text-left px-4 py-3 font-bold text-xs uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-sort="target_desc">Furthest</button>
+                            <button class="w-full text-left px-4 py-3 font-bold text-xs uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-sort="newest">Added (Newest)</button>
+                            <button class="w-full text-left px-4 py-3 font-bold text-xs uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-sort="oldest">Added (Oldest)</button>
+                        </div>
+                    </div>
+                    <button id="btn-close-cd-hub" aria-label="Close" class="font-bold text-2xl opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button>
+                </div>
+            </div>
+            <div id="cd-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto no-scrollbar pb-4 flex-1"></div>
+            <button id="btn-add-cd" class="w-full md:max-w-md mx-auto mt-4 border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-xl uppercase tracking-widest hover:opacity-80 transition-all shrink-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Add New Event</button>
+        </div>
+    </div>
+
+    <div id="cd-edit-modal" class="modal-bg fixed inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-xl z-[70] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+        <div class="border-4 border-black dark:border-white bg-white dark:bg-black rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 w-[92%] max-w-lg shadow-2xl flex flex-col max-h-[90dvh]">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h3 id="cd-edit-title-lbl" class="text-xl md:text-2xl font-bold uppercase tracking-widest">Edit Event</h3>
+                <button id="btn-close-cd-edit" aria-label="Close" class="font-bold text-2xl opacity-50 hover:opacity-100 transition-opacity focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button>
+            </div>
+            <input type="hidden" id="cd-id-input">
+            
+            <div class="flex flex-col gap-4 mb-6 flex-1 overflow-y-auto no-scrollbar pr-1">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs md:text-sm font-bold uppercase tracking-widest opacity-70">Title</label>
+                    <input type="text" id="cd-title-input" class="w-full bg-transparent border-4 border-black dark:border-white rounded-2xl px-4 py-3 text-xl md:text-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold" placeholder="e.g. Exam">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs md:text-sm font-bold uppercase tracking-widest opacity-70">Date (DD/MM/YYYY)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="cd-day" min="1" max="31" class="flex-1 w-0 bg-transparent border-4 border-black dark:border-white rounded-2xl h-14 md:h-16 text-2xl md:text-3xl text-center font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black" placeholder="DD">
+                        <input type="number" id="cd-month" min="1" max="12" class="flex-1 w-0 bg-transparent border-4 border-black dark:border-white rounded-2xl h-14 md:h-16 text-2xl md:text-3xl text-center font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black" placeholder="MM">
+                        <input type="number" id="cd-year" min="2024" max="2100" class="flex-[1.5] w-0 bg-transparent border-4 border-black dark:border-white rounded-2xl h-14 md:h-16 text-2xl md:text-3xl text-center font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black" placeholder="YYYY">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs md:text-sm font-bold uppercase tracking-widest opacity-70">Time (Optional)</label>
+                    <div class="flex gap-2 items-center">
+                        <input type="number" id="cd-hour" min="0" max="23" class="flex-1 w-0 bg-transparent border-4 border-black dark:border-white rounded-2xl h-14 md:h-16 text-2xl md:text-3xl text-center font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black" placeholder="HH">
+                        <span class="font-bold text-2xl flex-none">:</span>
+                        <input type="number" id="cd-minute" min="0" max="59" class="flex-1 w-0 bg-transparent border-4 border-black dark:border-white rounded-2xl h-14 md:h-16 text-2xl md:text-3xl text-center font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-colors focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black" placeholder="MM">
+                        <button id="btn-cd-ampm" class="hidden flex-[1.5] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold h-14 md:h-16 rounded-2xl text-xl md:text-2xl uppercase tracking-widest focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-all">AM</button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1 w-full">
+                    <label class="text-xs md:text-sm font-bold uppercase tracking-widest opacity-70">Goal</label>
+                    <input type="text" id="cd-goal-input" class="w-full bg-transparent border-4 border-black dark:border-white rounded-2xl px-4 py-3 text-xl md:text-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold" placeholder="Đỗ NV1...">
+                </div>
+            </div>
+
+            <div class="flex gap-3 shrink-0">
+                <button id="btn-delete-cd" class="flex-1 border-4 border-red-500 text-red-500 font-bold py-4 rounded-2xl text-lg uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all hidden focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Delete</button>
+                <button id="btn-save-cd" class="flex-[2] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 rounded-2xl text-lg uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-[100px] md:bottom-10 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full font-bold shadow-2xl transition-opacity duration-300 opacity-0 pointer-events-none z-[100] text-sm md:text-base whitespace-nowrap"></div>
+    <template id="tpl-alarm"><li class="flex justify-between items-center p-4 md:p-6 border-4 border-black dark:border-white rounded-2xl shrink-0"><div class="flex items-center"><span class="time-disp text-3xl md:text-4xl font-oswald font-bold"></span><span class="snooze-disp text-xl md:text-2xl font-bold text-red-500 ml-4 animate-pulse hidden"></span></div><div class="flex gap-2 md:gap-3"><button class="btn-toggle text-xs md:text-sm font-bold border-2 border-black dark:border-white px-3 md:px-4 py-2 md:py-3 rounded-xl hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"></button><button class="btn-del text-xs md:text-sm font-bold border-2 border-black dark:border-white px-3 md:px-4 py-2 md:py-3 rounded-xl hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors uppercase focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Del</button></div></li></template>
+    <template id="tpl-lap-item"><li class="flex justify-between border-b-2 border-gray-300 dark:border-gray-700 py-2 px-2"><span class="lap-num"></span><span class="lap-time font-bold font-oswald tabular-nums"></span></li></template>
+    <template id="tpl-preset-btn"><button class="preset-btn px-3 md:px-4 py-2 border-2 border-gray-400 rounded-xl hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition uppercase"></button></template>
+    <template id="tpl-preset-edit-btn"><button class="edit-preset-btn p-2 border-2 border-transparent rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 transition flex items-center justify-center opacity-60 hover:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button></template>
+    <template id="tpl-preset-row"><div class="preset-row flex items-center justify-between bg-gray-100 dark:bg-neutral-900 p-2 md:p-3 rounded-2xl border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-700 transition-colors shrink-0"><div class="flex items-center gap-1"><div class="flex items-center gap-2"><input type="number" min="0" max="99" class="preset-h w-16 md:w-20 p-0 m-0 box-border text-center bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl py-1 md:py-2 text-lg md:text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"><span class="text-xs md:text-sm font-bold uppercase opacity-70">h</span><input type="number" min="0" max="59" class="preset-m w-16 md:w-20 p-0 m-0 box-border text-center bg-white dark:bg-black border-2 border-black dark:border-white rounded-xl py-1 md:py-2 text-lg md:text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"><span class="text-xs md:text-sm font-bold uppercase opacity-70">m</span></div></div><button class="btn-delete-preset text-red-500 opacity-50 hover:opacity-100 px-3 py-2 font-bold text-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-opacity" title="Delete">✕</button></div></template>
+    <template id="tpl-focus-preset-btn"><button class="focus-preset-btn px-3 py-2 border-2 border-gray-400 rounded-xl hover:border-black dark:hover:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition uppercase"></button></template>
+    <template id="tpl-focus-preset-edit-btn"><button class="edit-focus-preset-btn p-2 border-2 border-transparent rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 transition flex items-center justify-center opacity-60 hover:opacity-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button></template>
+    <template id="tpl-focus-preset-row"><div class="focus-row flex flex-col gap-3 bg-gray-100 dark:bg-neutral-900 p-4 rounded-2xl relative shrink-0"><button class="btn-del-focus absolute top-3 right-3 text-red-500 opacity-50 hover:opacity-100 p-2 font-bold text-lg leading-none focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white transition-opacity">✕</button><div class="flex items-center gap-2 pr-8"><input type="number" min="0" max="99" class="fh w-14 p-1 text-center bg-transparent border-2 border-black dark:border-white rounded-lg text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"><span class="text-xs font-bold uppercase opacity-70">H</span><input type="number" min="0" max="59" class="fm w-14 p-1 text-center bg-transparent border-2 border-black dark:border-white rounded-lg text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"><span class="text-xs font-bold uppercase opacity-70">M</span></div><div class="flex items-center gap-2"><span class="text-xs font-bold uppercase opacity-70 min-w-[4rem]">Break</span><input type="number" min="0" max="99" class="bm w-14 p-1 text-center bg-transparent border-2 border-black dark:border-white rounded-lg text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"><span class="text-xs font-bold uppercase opacity-70">M</span></div><div class="flex items-center gap-2"><span class="text-xs font-bold uppercase opacity-70 min-w-[4rem]">Repeat</span><input type="number" min="1" max="15" class="fr w-14 p-1 text-center bg-transparent border-2 border-black dark:border-white rounded-lg text-xl font-mono font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div></div></template>
+    <template id="tpl-yt-item"><li class="yt-playlist-item flex items-center justify-between p-2 md:p-3 rounded-xl cursor-grab active:cursor-grabbing border transition-colors text-xs md:text-sm shrink-0" draggable="true"><div class="flex items-center gap-2 md:gap-3 overflow-hidden track-info cursor-pointer flex-1 min-w-0"><span class="text-gray-400 hover:text-black dark:hover:text-white flex-shrink-0"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg></span><span class="track-title truncate flex-1"></span></div><button class="btn-remove-track text-red-500 opacity-50 hover:opacity-100 font-bold px-2 py-1 text-[10px] md:text-xs flex-shrink-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">✕</button></li></template>
+    <template id="tpl-cd-card"><div class="cd-card border-4 rounded-[1.5rem] p-5 flex flex-col cursor-pointer hover:opacity-80 transition-opacity relative group" data-action="edit"><div class="flex justify-between items-start mb-4 shrink-0 pointer-events-none"><span class="cd-title font-bold tracking-widest text-base md:text-lg pr-8 leading-tight truncate"></span><button data-action="pin" class="btn-pin absolute top-4 right-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white pointer-events-auto"><svg class="w-6 h-6 pointer-events-none icon-pin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg></button></div><div class="flex justify-between items-center w-full mt-auto pointer-events-none"><div class="flex flex-col items-center flex-1"><span class="hub-d font-oswald font-bold text-3xl lg:text-4xl tracking-wide tabular-nums">00</span><span class="text-[9px] md:text-[10px] font-bold uppercase opacity-50 tracking-widest mt-1">Days</span></div><span class="font-oswald font-bold text-2xl lg:text-3xl opacity-50 -translate-y-2 shrink-0">:</span><div class="flex flex-col items-center flex-1"><span class="hub-h font-oswald font-bold text-3xl lg:text-4xl tracking-wide tabular-nums">00</span><span class="text-[9px] md:text-[10px] font-bold uppercase opacity-50 tracking-widest mt-1">Hrs</span></div><span class="font-oswald font-bold text-2xl lg:text-3xl opacity-50 -translate-y-2 shrink-0">:</span><div class="flex flex-col items-center flex-1"><span class="hub-m font-oswald font-bold text-3xl lg:text-4xl tracking-wide tabular-nums">00</span><span class="text-[9px] md:text-[10px] font-bold uppercase opacity-50 tracking-widest mt-1">Mins</span></div><span class="font-oswald font-bold text-2xl lg:text-3xl opacity-50 -translate-y-2 shrink-0">:</span><div class="flex flex-col items-center flex-1"><span class="hub-s font-oswald font-bold text-3xl lg:text-4xl tracking-wide tabular-nums">00</span><span class="text-[9px] md:text-[10px] font-bold uppercase opacity-50 tracking-widest mt-1">Secs</span></div></div></div></template>
+    <template id="tpl-pinned-cd"><div class="pinned-cd flex items-baseline justify-center gap-2 sm:gap-4 w-full cursor-pointer hover:opacity-70 transition-opacity"><span class="pin-title font-oswald font-bold text-xl sm:text-2xl tracking-widest opacity-60 text-right max-w-[45%] break-words leading-tight"></span><span class="font-oswald font-bold text-xl sm:text-2xl tracking-widest tabular-nums flex items-baseline"><span class="pin-d w-[1.3em] text-center inline-block">00</span>:<span class="pin-h w-[1.3em] text-center inline-block">00</span>:<span class="pin-m w-[1.3em] text-center inline-block">00</span>:<span class="pin-s w-[1.3em] text-center inline-block">00</span></span></div></template>
+    <template id="tpl-todo-cat">
+        <li class="p-4 border-2 border-black dark:border-white rounded-2xl bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer group flex flex-col gap-2 relative">
+            <div class="absolute top-3 right-2 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <button class="btn-pin-cat text-gray-400 hover:text-yellow-500 p-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white"><svg class="w-5 h-5 icon-pin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg></button>
+                <button class="btn-del-cat text-red-500 p-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold">✕</button>
+            </div>
+            <div class="flex items-center gap-2 pr-16">
+                <span class="cat-drag-handle cursor-grab active:cursor-grabbing opacity-30 hover:opacity-100 flex-shrink-0 text-xl">☰</span>
+                <span class="cat-title font-bold uppercase tracking-wider font-oswald text-xl truncate"></span>
+            </div>
+            <ul class="cat-preview flex flex-col gap-1 pointer-events-none pl-7"></ul>
+        </li>
+    </template>
+    <template id="tpl-todo-task">
+        <li class="flex items-start gap-3 p-3 border-2 border-black dark:border-white rounded-xl bg-white dark:bg-black group relative">
+            <span class="task-drag-handle cursor-grab active:cursor-grabbing opacity-30 hover:opacity-100 pt-1 flex-shrink-0 text-lg">☰</span>
+            <input type="checkbox" class="task-check mt-[5px] w-5 h-5 accent-black dark:accent-white shrink-0 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">
+            <span class="task-text flex-1 text-base break-words leading-tight pt-1 pr-6"></span>
+            <button class="btn-del-task absolute top-3 right-2 text-red-500 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity px-2 pt-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold">✕</button>
+        </li>
+    </template>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

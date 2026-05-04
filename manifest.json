@@ -1,0 +1,23 @@
+{
+  "name": "Study Clock",
+  "short_name": "StudyClock",
+  "description": "Ứng dụng quản lý thời gian học tập với Timer, To-do list và Trình phát nhạc.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "study-clock.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "study-clock.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
