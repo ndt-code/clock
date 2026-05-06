@@ -13,29 +13,52 @@ export class AppState {
             timerPresets: Array.isArray(tp) ? tp : [],
             focusPresets: Array.isArray(fp) ? fp : [],
             todo: Array.isArray(td) ? td : []
-        };
-        this.listeners = [];
+        };        
+        this.listeners = {};
         this.saveTimeouts = {};
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                Object.values(this.saveTimeouts).forEach(clearTimeout);
+                localStorage.setItem('alarms', JSON.stringify(this.data.alarms));
+                localStorage.setItem('countdowns', JSON.stringify(this.data.countdowns));
+                localStorage.setItem('timerPresets', JSON.stringify(this.data.timerPresets));
+                localStorage.setItem('focusPresets', JSON.stringify(this.data.focusPresets));
+                localStorage.setItem('todoList', JSON.stringify(this.data.todo));
+            }
+        });
     }
-    subscribe(f) { this.listeners.push(f) }
+    subscribe(key, f) {
+        if (!this.listeners[key]) this.listeners[key] = [];
+        this.listeners[key].push(f);
+    }
     notify(key) {
-        this.listeners.forEach(f => f());
+        if (key) {
+            if (this.listeners[key]) {
+                this.listeners[key].forEach(f => f());
+            }
+        } else {
+            Object.values(this.listeners).forEach(list => list.forEach(f => f()));
+        }        
         const scheduleSave = (k, dataKey, storageKey) => {
             if (!key || key === k) {
                 if (this.saveTimeouts[k]) clearTimeout(this.saveTimeouts[k]);
                 this.saveTimeouts[k] = setTimeout(() => {
-                    localStorage.setItem(storageKey, JSON.stringify(this.data[dataKey]));
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(this.data[dataKey]));
+                    } catch (e) {
+                        console.error(e);
+                    }
                 }, 500);
             }
-        };
+        };        
         scheduleSave('alarms', 'alarms', 'alarms');
         scheduleSave('countdowns', 'countdowns', 'countdowns');
         scheduleSave('timerPresets', 'timerPresets', 'timerPresets');
         scheduleSave('focusPresets', 'focusPresets', 'focusPresets');
         scheduleSave('todo', 'todo', 'todoList');
     }
-    addAlarm(a) { this.data.alarms.push(a); this.notify('alarms') }
-    deleteAlarm(i) { this.data.alarms = this.data.alarms.filter(a => a.id !== i); this.notify('alarms') }
+    addAlarm(a) { this.data.alarms.push(a); this.notify('alarms'); }
+    deleteAlarm(i) { this.data.alarms = this.data.alarms.filter(a => a.id !== i); this.notify('alarms'); }
     toggleAlarm(i) {
         const a = this.data.alarms.find(x => x.id === i);
         if (a) {
@@ -47,17 +70,17 @@ export class AppState {
         }
         this.notify('alarms');
     }
-    sortTodoCat(dir) { this.data.todo.sort((a, b) => dir === 'asc' ? a.id - b.id : b.id - a.id); this.notify('todo') }
+    sortTodoCat(dir) { this.data.todo.sort((a, b) => dir === 'asc' ? a.id - b.id : b.id - a.id); this.notify('todo'); }
     addTodoCat() {
         const cat = { id: Date.now(), title: '', tasks: [], pinned: false };
         this.data.todo.unshift(cat);
         this.notify('todo'); return cat.id;
     }
-    renameTodoCat(id, title) { const c = this.data.todo.find(x => x.id === id); if (c) { c.title = title; this.notify('todo') } }
-    deleteTodoCat(id) { this.data.todo = this.data.todo.filter(c => c.id !== id); this.notify('todo') }
-    pinTodoCat(id) { const c = this.data.todo.find(x => x.id === id); if (c) { c.pinned = !c.pinned; this.notify('todo') } }
-    addTodoTask(catId, text) { const c = this.data.todo.find(x => x.id === catId); if (c) { c.tasks.unshift({ id: Date.now(), text, done: false }); this.notify('todo') } }
-    toggleTodoTask(catId, taskId) { const c = this.data.todo.find(x => x.id === catId); if (c) { const t = c.tasks.find(x => x.id === taskId); if (t) t.done = !t.done; this.notify('todo') } }
-    deleteTodoTask(catId, taskId) { const c = this.data.todo.find(x => x.id === catId); if (c) { c.tasks = c.tasks.filter(x => x.id !== taskId); this.notify('todo') } }
+    renameTodoCat(id, title) { const c = this.data.todo.find(x => x.id === id); if (c) { c.title = title; this.notify('todo'); } }
+    deleteTodoCat(id) { this.data.todo = this.data.todo.filter(c => c.id !== id); this.notify('todo'); }
+    pinTodoCat(id) { const c = this.data.todo.find(x => x.id === id); if (c) { c.pinned = !c.pinned; this.notify('todo'); } }
+    addTodoTask(catId, text) { const c = this.data.todo.find(x => x.id === catId); if (c) { c.tasks.unshift({ id: Date.now(), text, done: false }); this.notify('todo'); } }
+    toggleTodoTask(catId, taskId) { const c = this.data.todo.find(x => x.id === catId); if (c) { const t = c.tasks.find(x => x.id === taskId); if (t) t.done = !t.done; this.notify('todo'); } }
+    deleteTodoTask(catId, taskId) { const c = this.data.todo.find(x => x.id === catId); if (c) { c.tasks = c.tasks.filter(x => x.id !== taskId); this.notify('todo'); } }
 }
 export const state = new AppState();

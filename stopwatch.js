@@ -1,38 +1,43 @@
 import { app } from './context.js';
+import { UIUtils } from './utils.js';
 
 export class StopwatchComponent {
-    constructor() { 
+    constructor() {
         this.startTime = 0; this.elapsedTime = 0; this.isRunning = false;
-        this.dom = {};
+        this.dom = {}; 
+        this.togglePlayHandler = (e) => {
+            if (e.detail.tab === 'stopwatch') {
+                if (this.isRunning) this.pause();
+                else this.start();
+            }
+        };
         this.initDOM();
-        this.init(); 
+        this.init();
     }
     initDOM() {
-        this.dom.hDisp = document.getElementById('sw-h-disp');
-        this.dom.mDisp = document.getElementById('sw-m-disp');
-        this.dom.sDisp = document.getElementById('sw-s-disp');
-        this.dom.msDisp = document.getElementById('sw-display-ms');
-        this.dom.lapListD = document.getElementById('lap-list');
-        this.dom.lapListM = document.getElementById('lap-list-mobile');
-        this.dom.startD = document.getElementById('btn-sw-start-d');
-        this.dom.startM = document.getElementById('btn-sw-start-m');
-        this.dom.pauseD = document.getElementById('btn-sw-pause-d');
-        this.dom.pauseM = document.getElementById('btn-sw-pause-m');
-        this.dom.lapD = document.getElementById('btn-sw-lap-d');
-        this.dom.lapM = document.getElementById('btn-sw-lap-m');
+        this.dom = UIUtils.bindDOM({
+            hDisp: 'sw-h-disp',
+            mDisp: 'sw-m-disp',
+            sDisp: 'sw-s-disp',
+            msDisp: 'sw-display-ms',
+            lapListD: 'lap-list',
+            lapListM: 'lap-list-mobile',
+            startD: 'btn-sw-start-d',
+            startM: 'btn-sw-start-m',
+            pauseD: 'btn-sw-pause-d',
+            pauseM: 'btn-sw-pause-m',
+            lapD: 'btn-sw-lap-d',
+            lapM: 'btn-sw-lap-m',
+            resetD: 'btn-sw-reset-d',
+            resetM: 'btn-sw-reset-m'
+        });
     }
     init() {
         this.dom.startD?.addEventListener('click', () => this.start()); this.dom.startM?.addEventListener('click', () => this.start());
         this.dom.pauseD?.addEventListener('click', () => this.pause()); this.dom.pauseM?.addEventListener('click', () => this.pause());
         this.dom.lapD?.addEventListener('click', () => this.lap()); this.dom.lapM?.addEventListener('click', () => this.lap());
-        document.getElementById('btn-sw-reset-d')?.addEventListener('click', () => this.reset()); document.getElementById('btn-sw-reset-m')?.addEventListener('click', () => this.reset());
-        
-        window.addEventListener('app:togglePlay', e => { 
-            if (e.detail.tab === 'stopwatch') { 
-                if (this.isRunning) this.pause();
-                else this.start();
-            } 
-        });
+        this.dom.resetD?.addEventListener('click', () => this.reset()); this.dom.resetM?.addEventListener('click', () => this.reset());
+        window.addEventListener('app:togglePlay', this.togglePlayHandler);
     }
     start() { this.startTime = Date.now(); this.isRunning = true; app.startLoopIfNeeded(); this.toggleBtns(true) }
     pause() { this.isRunning = false; this.elapsedTime += Date.now() - this.startTime; this.toggleBtns(false); if(this.dom.startD) this.dom.startD.innerText = "Resume"; if(this.dom.startM) this.dom.startM.innerText = "Resume" }
@@ -50,5 +55,8 @@ export class StopwatchComponent {
     render() {
         const total = this.elapsedTime + (this.isRunning ? Date.now() - this.startTime : 0), h = Math.floor(total / 3600000), m = Math.floor((total % 3600000) / 60000), s = Math.floor((total % 60000) / 1000), ms = Math.floor((total % 1000) / 10);
         if(this.dom.hDisp) this.dom.hDisp.innerText = h.toString().padStart(2, '0'); if(this.dom.mDisp) this.dom.mDisp.innerText = m.toString().padStart(2, '0'); if(this.dom.sDisp) this.dom.sDisp.innerText = s.toString().padStart(2, '0'); if(this.dom.msDisp) this.dom.msDisp.innerText = `.${ms.toString().padStart(2, '0')}`;
+    }
+    destroy() {
+        window.removeEventListener('app:togglePlay', this.togglePlayHandler);
     }
 }

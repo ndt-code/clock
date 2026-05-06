@@ -3,41 +3,49 @@ import { state } from './state.js';
 import { app } from './context.js';
 
 export class GlobalController {
-    constructor() { 
-        this.is24Hour = true; 
-        this.audioCtx = null; 
-        this.alertInterval = null; 
-        this.theme = localStorage.theme || 'light'; 
+    constructor() {
+        this.is24Hour = true;
+        this.audioCtx = null;
+        this.alertInterval = null;
+        this.theme = localStorage.theme || 'light';
         this.dom = {};
         this.initDOM();
-        this.init(); 
+        this.init();
     }
     initDOM() {
-        this.dom.lbl1224 = document.getElementById('lbl-12-24');
-        this.dom.toast = document.getElementById('toast');
-        this.dom.alertModal = document.getElementById('alert-modal');
-        this.dom.alertTitle = document.getElementById('alert-title');
-        this.dom.alertMsg = document.getElementById('alert-msg');
-        this.dom.alertSnoozeAlarm = document.getElementById('alert-snooze-alarm');
-        this.dom.alertSnoozeTimer = document.getElementById('alert-snooze-timer');
-        this.dom.alertMainBtns = document.getElementById('alert-main-btns');
-        this.dom.alertFocusBtns = document.getElementById('alert-focus-btns');
-        this.dom.snoozeH = document.getElementById('snooze-t-h');
-        this.dom.snoozeM = document.getElementById('snooze-t-m');
-        this.dom.snoozeS = document.getElementById('snooze-t-s');
+        this.dom = UIUtils.bindDOM({
+            lbl1224: 'lbl-12-24',
+            toast: 'toast',
+            alertModal: 'alert-modal',
+            alertTitle: 'alert-title',
+            alertMsg: 'alert-msg',
+            alertSnoozeAlarm: 'alert-snooze-alarm',
+            alertSnoozeTimer: 'alert-snooze-timer',
+            alertMainBtns: 'alert-main-btns',
+            alertFocusBtns: 'alert-focus-btns',
+            snoozeH: 'snooze-t-h',
+            snoozeM: 'snooze-t-m',
+            snoozeS: 'snooze-t-s',
+            btnRingtoneMenu: 'btn-ringtone-menu',
+            ringtoneModal: 'ringtone-modal',
+            btnCloseRingtone: 'btn-close-ringtone'
+        });
+        this.dom.ringtoneBtns = document.querySelectorAll('.ringtone-btn');
     }
-    initAudio() { if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (this.audioCtx.state === 'suspended') this.audioCtx.resume(); }
+    initAudio() {
+        if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+    }
     init() {
-        const unlockAudio = () => { this.initAudio(); const o = this.audioCtx.createOscillator(), g = this.audioCtx.createGain(); g.gain.value = 0; o.connect(g); g.connect(this.audioCtx.destination); o.start(); o.stop(this.audioCtx.currentTime + 0.1); document.removeEventListener('touchstart', unlockAudio); document.removeEventListener('click', unlockAudio) };
-        document.addEventListener('touchstart', unlockAudio, { once: true, passive: true }); document.addEventListener('click', unlockAudio, { once: true });
         document.getElementById('btn-export-data')?.addEventListener('click', () => this.exportData());
         document.getElementById('btn-import-data')?.addEventListener('click', () => this.importData());
         ['snooze-t-h', 'snooze-t-m', 'snooze-t-s'].forEach(id => UIUtils.setupNum(document.getElementById(id)));
-        document.addEventListener('contextmenu', e => { if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) e.preventDefault(); });
+        document.addEventListener('contextmenu', e => {
+            if (!['INPUT', 'TEXTAREA'].includes(e.target.tagName)) e.preventDefault();
+        });
         if (this.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
         document.getElementById('theme-toggle-menu')?.addEventListener('click', () => this.toggleDarkMode());
         document.getElementById('btn-toggle-12-24-menu')?.addEventListener('click', () => this.toggleTimeFormat());
-        
         const btnSet = document.getElementById('btn-settings-menu');
         const popSet = document.getElementById('settings-popup');
         const iconSet = document.getElementById('icon-settings-chevron');
@@ -61,7 +69,6 @@ export class GlobalController {
         document.getElementById('btn-todo-desk')?.addEventListener('click', () => this.toggleTodoSidebar(true));
         document.getElementById('btn-todo-mob')?.addEventListener('click', () => this.toggleTodoSidebar(true));
         document.getElementById('btn-close-todo')?.addEventListener('click', () => this.toggleTodoSidebar(false));
-
         document.addEventListener('keydown', e => {
             const isInput = ['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName);
             if (e.key === 'Escape') {
@@ -94,11 +101,41 @@ export class GlobalController {
         document.getElementById('music-backdrop')?.addEventListener('click', () => { const td = document.getElementById('todo-sidebar'); if (td && !td.classList.contains('md:translate-x-[120%]')) { this.toggleTodoSidebar(false) } });
         document.getElementById('btn-stop-alert-1')?.addEventListener('click', () => this.stopAlert()); document.getElementById('btn-stop-alert-2')?.addEventListener('click', () => this.stopAlert()); document.getElementById('btn-stop-alert-3')?.addEventListener('click', () => this.stopAlert());
         document.getElementById('btn-show-snooze')?.addEventListener('click', () => { this.dom.alertMainBtns.classList.replace('flex', 'hidden'); if (app.currentAlertType === 'alarm') this.dom.alertSnoozeAlarm.classList.replace('hidden', 'flex'); else if (app.currentAlertType === 'timer') this.dom.alertSnoozeTimer.classList.replace('hidden', 'flex') });
-        document.querySelectorAll('#alert-snooze-alarm button[data-action="snooze"]').forEach(b => b.addEventListener('click', e => { this.stopAlert(); if (app.currentAlertAlarmId) { const a = state.data.alarms.find(x => x.id === app.currentAlertAlarmId); if (a) { a.snoozeMins = parseInt(e.target.dataset.time); state.notify(); app.alarmSnoozeTimeout = setTimeout(() => this.startAlert("ALARM SNOOZED!", `Wake up!`, false, 'alarm', a.id), a.snoozeMins * 60000) } } }));
+        document.querySelectorAll('#alert-snooze-alarm button[data-action="snooze"]').forEach(b => b.addEventListener('click', e => {
+            const addedSnooze = parseInt(e.target.dataset.time);
+            let targetAlarm = null;
+            let currentSnooze = 0;
+            if (app.currentAlertAlarmId) {
+                targetAlarm = state.data.alarms.find(x => x.id === app.currentAlertAlarmId);
+                if (targetAlarm) currentSnooze = targetAlarm.snoozeMins || 0;
+            }
+            this.stopAlert();
+            if (targetAlarm) {
+                targetAlarm.snoozeMins = currentSnooze + addedSnooze;
+                state.notify('alarms');
+                app.alarmSnoozeTimeout = setTimeout(() => this.startAlert("ALARM SNOOZED!", `Wake up!`, false, 'alarm', targetAlarm.id), addedSnooze * 60000);
+            }
+        }));
         document.getElementById('btn-snooze-timer-apply')?.addEventListener('click', () => { this.stopAlert(); const h = parseInt(this.dom.snoozeH.value) || 0, m = parseInt(this.dom.snoozeM.value) || 0, s = parseInt(this.dom.snoozeS.value) || 0, ms = (h * 3600 + m * 60 + s) * 1000; if (ms > 0) { app.timerComp.remainingMs = ms; app.timerComp.totalMs = ms; app.timerComp.start() } });
         window.history.pushState(null, null, window.location.href);
         window.addEventListener('popstate', () => { const isT = app.timerComp?.isRunning, isS = app.swComp?.isRunning, isF = app.focusComp?.isRunning || app.focusComp?.state !== 'idle'; if (isT || isS || isF) { if (confirm("Process running. Quit?")) window.history.back(); else window.history.pushState(null, null, window.location.href) } });
         window.addEventListener('beforeunload', e => { const isT = app.timerComp?.isRunning, isS = app.swComp?.isRunning, isF = app.focusComp?.isRunning || app.focusComp?.state !== 'idle'; if (isT || isS || isF) { e.preventDefault(); e.returnValue = ''; return '' } });
+        this.dom.btnRingtoneMenu?.addEventListener('click', () => {
+            this.updateRingtoneUI();
+            UIUtils.openModal(this.dom.ringtoneModal);
+        });
+        this.dom.btnCloseRingtone?.addEventListener('click', () => UIUtils.closeModal(this.dom.ringtoneModal));
+        this.dom.ringtoneBtns?.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                localStorage.setItem('ringtone', e.target.dataset.tone);
+                this.updateRingtoneUI();
+                this.playBeep(true);
+            });
+        });
+        window.addEventListener('app:triggerAlert', (e) => {
+            const { title, msg, type, id } = e.detail;
+            this.startAlert(title, msg, false, type, id);
+        });
     }
     toggleTodoSidebar(open) {
         const s = document.getElementById('todo-sidebar'), b = document.getElementById('music-backdrop');
@@ -123,50 +160,98 @@ export class GlobalController {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden', 'flex')); document.getElementById('tab-' + target).classList.remove('hidden'); document.getElementById('tab-' + target).classList.add('flex');
     }
     requestNoti() { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission() }
-    playBeep() { if (!this.audioCtx) return; const o = this.audioCtx.createOscillator(), g = this.audioCtx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(880, this.audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.5); g.gain.setValueAtTime(0.3, this.audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.5); o.connect(g); g.connect(this.audioCtx.destination); o.start(); o.stop(this.audioCtx.currentTime + 0.5) }
+    playBeep(isTest = false) {
+        if (!this.audioCtx) return;
+        const type = localStorage.getItem('ringtone') || 'beep';
+        const o = this.audioCtx.createOscillator();
+        const g = this.audioCtx.createGain();
+        o.connect(g);
+        g.connect(this.audioCtx.destination);
+        const now = this.audioCtx.currentTime;
+        if (type === 'beep') {
+            o.type = 'sine';
+            o.frequency.setValueAtTime(880, now);
+            o.frequency.exponentialRampToValueAtTime(440, now + 0.5);
+            g.gain.setValueAtTime(0.3, now);
+            g.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            o.start(now);
+            o.stop(now + 0.5);
+        } else if (type === 'digital') {
+            o.type = 'square';
+            o.frequency.setValueAtTime(600, now);
+            o.frequency.setValueAtTime(600, now + 0.15);
+            o.frequency.exponentialRampToValueAtTime(800, now + 0.16);
+            o.frequency.setValueAtTime(800, now + 0.3);
+            o.frequency.exponentialRampToValueAtTime(600, now + 0.31);
+            g.gain.setValueAtTime(0.1, now);
+            g.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            o.start(now);
+            o.stop(now + 0.4);
+        } else if (type === 'marimba') {
+            o.type = 'sine';
+            o.frequency.setValueAtTime(400, now);
+            o.frequency.setValueAtTime(800, now + 0.1);
+            g.gain.setValueAtTime(0.5, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            o.start(now);
+            o.stop(now + 0.5);
+        }
+        if (isTest) {
+            setTimeout(() => {
+                if(this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume();
+            }, 10);
+        }
+    }
     startAlert(t, m, revisit, type = 'alarm', id = null) {
         if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        app.currentAlertType = type; 
-        app.currentAlertAlarmId = id; 
-        this.initAudio(); 
-        
-        this.dom.alertTitle.innerText = t; 
+        app.currentAlertType = type;
+        app.currentAlertAlarmId = id;
+        this.initAudio();
+        this.dom.alertTitle.innerText = t;
         this.dom.alertMsg.innerText = m;
-        this.dom.alertSnoozeAlarm.classList.replace('flex', 'hidden'); 
+        this.dom.alertSnoozeAlarm.classList.replace('flex', 'hidden');
         this.dom.alertSnoozeTimer.classList.replace('flex', 'hidden');
         this.dom.alertMainBtns.classList.replace('hidden', 'flex');
-        
-        const sBtn = document.getElementById('btn-show-snooze'); 
+        const sBtn = document.getElementById('btn-show-snooze');
         if (sBtn) sBtn.classList.toggle('hidden', !(type === 'alarm' || type === 'timer'));
-        
-        UIUtils.openModal(this.dom.alertModal); 
-        this.playBeep(); 
-        this.alertInterval = UIUtils.clearTask(this.alertInterval); 
+        UIUtils.openModal(this.dom.alertModal);
+        this.playBeep();
+        this.alertInterval = UIUtils.clearTask(this.alertInterval);
         this.alertInterval = setInterval(() => this.playBeep(), 1000);
-        
-        if (!revisit && document.hidden && "Notification" in window && Notification.permission === "granted") { 
-            if (navigator.serviceWorker && navigator.serviceWorker.ready) { 
-                navigator.serviceWorker.ready.then(r => r.showNotification(t, { body: m, icon: 'study-clock.png', vibrate: [200, 100, 200], tag: 'study-alert' })).catch(() => new Notification(t, { body: m })) 
-            } else { 
-                new Notification(t, { body: m }) 
-            } 
+        if (!revisit && document.hidden && "Notification" in window && Notification.permission === "granted") {
+            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(r => r.showNotification(t, { body: m, icon: 'study-clock.png', vibrate: [200, 100, 200], tag: 'study-alert' })).catch(() => new Notification(t, { body: m }))
+            } else {
+                new Notification(t, { body: m })
+            }
         }
-        
-        if (app.musicPlayer && app.musicPlayer.ytPlayer && app.musicPlayer.ytPlayer.setVolume) {
-            app.musicPlayer.ytPlayer.setVolume(Math.max(5, Math.floor(app.musicPlayer.currentVol * 0.2)));
+        if (app.musicPlayer) {
+            if (app.musicPlayer.ytPlayer && typeof app.musicPlayer.ytPlayer.setVolume === 'function') app.musicPlayer.ytPlayer.setVolume(Math.max(5, Math.floor(app.musicPlayer.mediaVol * 0.2)));
+            if (app.musicPlayer.wnPlayer && typeof app.musicPlayer.wnPlayer.setVolume === 'function') app.musicPlayer.wnPlayer.setVolume(Math.max(5, Math.floor(app.musicPlayer.mediaVol * 0.2)));
         }
     }
-    stopAlert() { 
-        this.alertInterval = UIUtils.clearTask(this.alertInterval); 
-        UIUtils.closeModal(this.dom.alertModal); 
-        if (app.musicPlayer && app.musicPlayer.ytPlayer && app.musicPlayer.ytPlayer.setVolume) app.musicPlayer.ytPlayer.setVolume(app.musicPlayer.currentVol); 
-        if (app.currentAlertType === 'alarm' && app.currentAlertAlarmId) { 
-            const a = state.data.alarms.find(x => x.id === app.currentAlertAlarmId); 
-            if (a) { a.snoozeMins = 0; state.notify(); app.alarmSnoozeTimeout = UIUtils.clearTask(app.alarmSnoozeTimeout) } 
-        } 
+    stopAlert() {
+        this.alertInterval = UIUtils.clearTask(this.alertInterval);
+        UIUtils.closeModal(this.dom.alertModal);
+        if (app.musicPlayer) {
+            if (app.musicPlayer.ytPlayer && typeof app.musicPlayer.ytPlayer.setVolume === 'function') app.musicPlayer.ytPlayer.setVolume(app.musicPlayer.mediaVol);
+            if (app.musicPlayer.wnPlayer && typeof app.musicPlayer.wnPlayer.setVolume === 'function') app.musicPlayer.wnPlayer.setVolume(app.musicPlayer.mediaVol);
+        }
+        if (app.currentAlertType === 'alarm' && app.currentAlertAlarmId) {
+            const a = state.data.alarms.find(x => x.id === app.currentAlertAlarmId);
+            if (a) { a.snoozeMins = 0; state.notify('alarms'); app.alarmSnoozeTimeout = UIUtils.clearTask(app.alarmSnoozeTimeout) }
+        }
     }
     exportData() {
-        const data = { alarms: UIUtils.getSafeData('alarms', []), countdowns: UIUtils.getSafeData('countdowns', []), timerPresets: UIUtils.getSafeData('timerPresets', []), focusPresets: UIUtils.getSafeData('focusPresets', []), todoList: UIUtils.getSafeData('todoList', []) };
+        const data = {
+             alarms: UIUtils.getSafeData('alarms', []),
+             countdowns: UIUtils.getSafeData('countdowns', []),
+             timerPresets: UIUtils.getSafeData('timerPresets', []),
+             focusPresets: UIUtils.getSafeData('focusPresets', []),
+             todoList: UIUtils.getSafeData('todoList', []),
+            ringtone: localStorage.getItem('ringtone') || 'beep',
+            mediaVol: parseInt(localStorage.getItem('mediaVol') || 100)
+        };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `study_clock_data_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); this.toast("Data exported!");
@@ -188,11 +273,25 @@ export class GlobalController {
                         localStorage.setItem(key, JSON.stringify(merged));
                     };
                     mergeArray('alarms', data.alarms); mergeArray('countdowns', data.countdowns); mergeArray('timerPresets', data.timerPresets); mergeArray('focusPresets', data.focusPresets); mergeArray('todoList', data.todoList);
+                    if (data.ringtone) localStorage.setItem('ringtone', data.ringtone);
+                    if (data.mediaVol !== undefined) localStorage.setItem('mediaVol', data.mediaVol);
                     this.toast("Complete! Loading data..."); setTimeout(() => window.location.reload(), 1500);
                 } catch (err) { this.toast("Invalid data!"); }
             };
             reader.readAsText(file);
         };
         input.click();
+    }
+    updateRingtoneUI() {
+        const currentTone = localStorage.getItem('ringtone') || 'beep';
+        this.dom.ringtoneBtns?.forEach(btn => {
+            if (btn.dataset.tone === currentTone) {
+                btn.classList.add('border-black', 'dark:border-white', 'bg-gray-100', 'dark:bg-gray-800');
+                btn.classList.remove('border-black/10', 'dark:border-white/10', 'bg-transparent');
+            } else {
+                btn.classList.add('border-black/10', 'dark:border-white/10', 'bg-transparent');
+                btn.classList.remove('border-black', 'dark:border-white', 'bg-gray-100', 'dark:bg-gray-800');
+            }
+        });
     }
 }

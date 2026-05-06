@@ -13,32 +13,33 @@ export class EventComponent {
     }
 
     initDOM() {
-        this.dom.dayInp = document.getElementById('cd-day');
-        this.dom.monthInp = document.getElementById('cd-month');
-        this.dom.yearInp = document.getElementById('cd-year');
-        this.dom.hourInp = document.getElementById('cd-hour');
-        this.dom.minuteInp = document.getElementById('cd-minute');
-        this.dom.hubDesk = document.getElementById('btn-cd-hub-desk');
-        this.dom.hubMob = document.getElementById('btn-cd-hub-mob');
-        this.dom.closeHub = document.getElementById('btn-close-cd-hub');
-        this.dom.closeEdit = document.getElementById('btn-close-cd-edit');
-        this.dom.addCd = document.getElementById('btn-add-cd');
-        this.dom.saveCd = document.getElementById('btn-save-cd');
-        this.dom.delCd = document.getElementById('btn-delete-cd');
-        this.dom.ampmBtn = document.getElementById('btn-cd-ampm');
-        this.dom.sortBtn = document.getElementById('btn-cd-sort');
-        this.dom.sortMenu = document.getElementById('cd-sort-menu');
-        this.dom.sortLbl = document.getElementById('cd-sort-label');
-        this.dom.grid = document.getElementById('cd-grid');
-        this.dom.pinCont = document.getElementById('pinned-cd-container');
-        this.dom.hubModal = document.getElementById('cd-hub-modal');
-        this.dom.editModal = document.getElementById('cd-edit-modal');
-        this.dom.idInp = document.getElementById('cd-id-input');
-        this.dom.titleInp = document.getElementById('cd-title-input');
-        this.dom.goalInp = document.getElementById('cd-goal-input');
-        this.dom.tabClock = document.getElementById('tab-clock');
+        this.dom = UIUtils.bindDOM({
+            dayInp: 'cd-day',
+            monthInp: 'cd-month',
+            yearInp: 'cd-year',
+            hourInp: 'cd-hour',
+            minuteInp: 'cd-minute',
+            hubDesk: 'btn-cd-hub-desk',
+            hubMob: 'btn-cd-hub-mob',
+            closeHub: 'btn-close-cd-hub',
+            closeEdit: 'btn-close-cd-edit',
+            addCd: 'btn-add-cd',
+            saveCd: 'btn-save-cd',
+            delCd: 'btn-delete-cd',
+            ampmBtn: 'btn-cd-ampm',
+            sortBtn: 'btn-cd-sort',
+            sortMenu: 'cd-sort-menu',
+            sortLbl: 'cd-sort-label',
+            grid: 'cd-grid',
+            pinCont: 'pinned-cd-container',
+            hubModal: 'cd-hub-modal',
+            editModal: 'cd-edit-modal',
+            idInp: 'cd-id-input',
+            titleInp: 'cd-title-input',
+            goalInp: 'cd-goal-input',
+            tabClock: 'tab-clock'
+        });
     }
-
     init() {
         [this.dom.dayInp, this.dom.monthInp, this.dom.yearInp, this.dom.hourInp, this.dom.minuteInp].forEach(el => UIUtils.setupNum(el));
         this.dom.hubDesk?.addEventListener('click', () => UIUtils.openModal(this.dom.hubModal) || this.renderHub());
@@ -208,11 +209,12 @@ export class EventComponent {
         this.dom.grid.innerHTML = ''; 
         let s = [...state.data.countdowns]; 
         
-        if (s.length === 0) { 
-            this.dom.grid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center opacity-50 py-10 mt-10"><span class="text-5xl mb-4"> </span><p class="font-bold uppercase tracking-widest text-center">No events yet.<br>Click "Add New Event" to start!</p></div>'; 
-            this.updateCDTimes(); 
-            return 
-        } 
+        const emptyState = document.getElementById('cd-grid-empty');
+         if (s.length === 0) {
+             emptyState.classList.replace('hidden', 'flex');
+             this.updateCDTimes();
+             return;
+         }
         
         if (this.currentSort === 'target_asc') s.sort((a, b) => a.target - b.target); 
         else if (this.currentSort === 'target_desc') s.sort((a, b) => b.target - a.target); 
@@ -224,7 +226,7 @@ export class EventComponent {
         s.forEach(c => { 
             const cl = document.getElementById('tpl-cd-card').content.cloneNode(true), card = cl.querySelector('.cd-card'); 
             card.dataset.id = c.id; 
-            cl.querySelector('.cd-title').textContent = c.title; 
+            cl.querySelector('.cd-title').textContent = c.title;
             
             const pb = cl.querySelector('.btn-pin'); 
             pb.dataset.id = c.id; 
@@ -258,7 +260,7 @@ export class EventComponent {
         p.forEach(x => { 
             const cl = document.getElementById('tpl-pinned-cd').content.cloneNode(true), wr = cl.querySelector('.pinned-cd'); 
             wr.dataset.id = x.id; 
-            cl.querySelector('.pin-title').textContent = x.title; 
+            cl.querySelector('.pin-title').textContent = x.title;
             ['d', 'h', 'm', 's'].forEach(k => cl.querySelector('.pin-' + k).id = 'pin-' + k + '-' + x.id); 
             frag.appendChild(cl);
         }); 

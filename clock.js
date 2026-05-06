@@ -9,29 +9,30 @@ export class ClockComponent {
         this.init();
     }
     initDOM() {
-        this.dom.realH = document.getElementById('real-h');
-        this.dom.realM = document.getElementById('real-m');
-        this.dom.realSDesk = document.getElementById('real-s-desktop');
-        this.dom.ampmDesk = document.getElementById('real-ampm-desktop');
-        this.dom.realHM = document.getElementById('real-h-m');
-        this.dom.realMM = document.getElementById('real-m-m');
-        this.dom.realSM = document.getElementById('real-s-m');
-        this.dom.mobileAmpm = document.getElementById('mobile-ampm');
-        this.dom.cdHubModal = document.getElementById('cd-hub-modal');
+        this.dom = UIUtils.bindDOM({
+            realH: 'real-h',
+            realM: 'real-m',
+            realSDesk: 'real-s-desktop',
+            ampmDesk: 'real-ampm-desktop',
+            realHM: 'real-h-m',
+            realMM: 'real-m-m',
+            realSM: 'real-s-m',
+            mobileAmpm: 'mobile-ampm',
+            cdHubModal: 'cd-hub-modal'
+        });
     }
     init() {
         window.addEventListener('timeFormatChanged', () => this.update());
-        const workerCode = `let t=null;self.onmessage=e=>{if(e.data==='start')t=setInterval(()=>self.postMessage('tick'),1000);else if(e.data==='stop')clearInterval(t)}`;
-        this.worker = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' })));
+        this.worker = new Worker('./worker.js');
         this.worker.onmessage = e => { if (e.data === 'tick') this.tick() };
-        this.worker.postMessage('start');
+        this.worker.postMessage({ action: 'start', interval: 1000 });
         this.update();
     }
     tick() {
         const now = new Date(), h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
         this.checkAlarms(h, m, s);
         this.update();
-        if (this.dom.cdHubModal && !this.dom.cdHubModal.classList.contains('hidden') && app.eventComp) app.eventComp.updateCDTimes();
+        if (app.eventComp) app.eventComp.updateCDTimes();
     }
     update() {
         if (document.body.getAttribute('data-active-tab') !== 'clock') return;
