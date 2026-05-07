@@ -23,13 +23,13 @@ export class MusicPlayer {
         this.originalQueue = [];
         this.activeWnIdx = -1;
         this.wnTracks = [
-            { id: 'nDq6TstdEi8', title: 'Rain & Thunder', icon: ' ' },
-            { id: 'c9pQYOGIWM8', title: 'Coffee Shop', icon: ' ' },
-            { id: 'lE6RYpe9IT0', title: 'Ocean Waves', icon: ' ' },
-            { id: 'Ftm2uv7-YBW', title: 'Campfire', icon: ' ' },
-            { id: 'nA9UZF-HNjc', title: 'Deep Space', icon: ' ' },
-            { id: 'wzjWIxXBs_s', title: 'Forest Birds', icon: ' ' },
-            { id: 'MCkTebktHVc', title: 'Brown Noise', icon: ' ' }
+            { id: 'nDq6TstdEi8', title: 'Rain & Thunder', icon: '🌧️' },
+            { id: 'c9pQYOGIWM8', title: 'Coffee Shop', icon: '☕' },
+            { id: 'lE6RYpe9IT0', title: 'Ocean Waves', icon: '🌊' },
+            { id: 'Ftm2uv7-YBW', title: 'Campfire', icon: '🔥' },
+            { id: 'nA9UZF-HNjc', title: 'Deep Space', icon: '🌌' },
+            { id: 'wzjWIxXBs_s', title: 'Forest Birds', icon: '🐦' },
+            { id: 'MCkTebktHVc', title: 'Brown Noise', icon: '🟤' }
         ];
         this.icL = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>`;
         this.icLa = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>`;

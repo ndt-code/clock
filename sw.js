@@ -1,26 +1,27 @@
 const CACHE_NAME = 'study-clock-v6.5.26';
-const urlsToCache = [
-  './',
-  './index.html',
-  './style.css',
-  './study-clock.png',
-  './manifest.json',
-  './worker.js',
-  './main.js',
-  './utils.js',
-  './state.js',
-  './context.js',
-  './globalController.js',
-  './clock.js',
-  './timer.js',
-  './stopwatch.js',
-  './alarm.js',
-  './event.js',
-  './focus.js',
-  './todo.js',
-  './music.js'
-];
+const BASE_PATH = '/clock/'; 
 
+const filesToCache = [
+  'index.html',
+  'style.css',
+  'study-clock.png',
+  'manifest.json',
+  'worker.js',
+  'main.js',
+  'utils.js',
+  'state.js',
+  'context.js',
+  'globalController.js',
+  'clock.js',
+  'timer.js',
+  'stopwatch.js',
+  'alarm.js',
+  'event.js',
+  'focus.js',
+  'todo.js',
+  'music.js'
+];
+const urlsToCache = filesToCache.map(file => BASE_PATH + file);
 self.addEventListener('install', event => {
     self.skipWaiting();
     event.waitUntil(
