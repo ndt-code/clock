@@ -4,6 +4,16 @@ export const UIUtils = {
         if(v) { clearInterval(v); clearTimeout(v); }
         return null;
     },
+    parseMs: (ms) => {
+        const t = Math.max(0, ms);
+        const sec = Math.floor(t / 1000);
+        return {
+            h: Math.floor(sec / 3600),
+            m: Math.floor((sec % 3600) / 60),
+            s: sec % 60,
+            ms: Math.floor((t % 1000) / 10)
+        };
+    },
     getSafeData: (k, d) => {
         try {
             const i = localStorage.getItem(k);

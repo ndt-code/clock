@@ -49,17 +49,16 @@ self.addEventListener('fetch', event => {
         return;
     }
     event.respondWith(
-        caches.open(CACHE_NAME).then(async cache => {
-            const cachedResponse = await cache.match(event.request);          
-            const networkFetchPromise = fetch(event.request).then(networkResponse => {
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-                    cache.put(event.request, networkResponse.clone());
-                }
-                return networkResponse;
-            }).catch(error => {
-                console.warn('Network fetch failed, relying on cache:', error);
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request).then(cachedResponse => {
+                const fetchPromise = fetch(event.request).then(networkResponse => {
+                    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+                        cache.put(event.request, networkResponse.clone());
+                    }
+                    return networkResponse;
+                }).catch(() => {});
+                return cachedResponse || fetchPromise;
             });
-            return cachedResponse || networkFetchPromise;
         })
     );
 });

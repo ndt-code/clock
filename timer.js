@@ -6,7 +6,6 @@ export class TimerComponent {
     constructor() {
         this.isRunning = false; this.endMs = 0; this.remainingMs = 0; this.totalMs = 0;
         this.dom = {};
-        
         this.togglePlayHandler = (e) => {
             if (e.detail.tab === 'timer') {
                 if (this.isRunning) {
@@ -16,7 +15,6 @@ export class TimerComponent {
                 }
             }
         };
-
         this.initDOM();
         this.init();
     }
@@ -43,8 +41,7 @@ export class TimerComponent {
     }
     init() {
         this.worker = new Worker('./worker.js');
-        this.worker.onmessage = () => { if(this.isRunning) this.render() };
-        
+        this.worker.onmessage = () => {if(this.isRunning&&(this.endMs-Date.now()<= 0)){this.finish();}};
         [this.dom.hInp, this.dom.mInp, this.dom.sInp].forEach(el => UIUtils.setupNum(el));
         this.dom.startD?.addEventListener('click', () => this.start()); 
         this.dom.startM?.addEventListener('click', () => this.start());
@@ -75,6 +72,11 @@ export class TimerComponent {
         window.addEventListener('app:togglePlay', this.togglePlayHandler);
         this.renderPresets();
     }
+    runAnimationLoop() {
+        if (!this.isRunning) return;
+        this.render();
+        requestAnimationFrame(() => this.runAnimationLoop());
+    }
     start() {
         if (document.activeElement && document.activeElement.tagName === 'INPUT') {
             document.activeElement.blur();
@@ -90,7 +92,7 @@ export class TimerComponent {
             this.endMs = Date.now() + this.remainingMs;
             this.isRunning = true;
             this.worker.postMessage({ action: 'start', interval: 100 });
-            if (app.startLoopIfNeeded) app.startLoopIfNeeded();
+            this.runAnimationLoop();
             this.dom.inputWrap.classList.add('hidden');
             this.dom.dispWrap.classList.replace('hidden', 'flex');
             this.toggleBtns(true);
@@ -138,17 +140,11 @@ export class TimerComponent {
     render() {
         let rem = this.isRunning ? (this.endMs - Date.now()) : this.remainingMs;
         if (rem <= 0) { rem = 0; if (this.isRunning) this.finish(); }
-        const sec = Math.floor(rem / 1000), 
-              h = Math.floor(sec / 3600), 
-              m = Math.floor((sec % 3600) / 60), 
-              s = sec % 60, 
-              ms = Math.floor((rem % 1000) / 10);
-              
-        if(this.dom.hDisp) this.dom.hDisp.innerText = h.toString().padStart(2, '0'); 
-        if(this.dom.mDisp) this.dom.mDisp.innerText = m.toString().padStart(2, '0'); 
-        if(this.dom.sDisp) this.dom.sDisp.innerText = s.toString().padStart(2, '0'); 
-        if(this.dom.msDisp) this.dom.msDisp.innerText = `.${ms.toString().padStart(2, '0')}`;
-        
+        const t = UIUtils.parseMs(rem);
+        if(this.dom.hDisp) this.dom.hDisp.innerText = t.h.toString().padStart(2, '0'); 
+        if(this.dom.mDisp) this.dom.mDisp.innerText = t.m.toString().padStart(2, '0'); 
+        if(this.dom.sDisp) this.dom.sDisp.innerText = t.s.toString().padStart(2, '0'); 
+        if(this.dom.msDisp) this.dom.msDisp.innerText = `.${t.ms.toString().padStart(2, '0')}`;
         if (this.totalMs > 0 && this.dom.prog) { 
             this.dom.prog.style.strokeDashoffset = 301.59 * (1 - (rem / this.totalMs)); 
             if (this.isRunning) this.dom.prog.style.transition = 'stroke-dashoffset 0.1s linear';

@@ -223,21 +223,35 @@
                     </div>
                 </div>
             </section>
-           <section id="tab-focus" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-center min-h-0 overflow-hidden relative">
+           <section id="tab-focus" class="tab-content w-full h-full flex-1 hidden flex-col items-center justify-center min-h-0 overflow-hidden relative">                
+                <div id="focus-video-vol-container" class="absolute top-4 left-4 z-[60] flex items-center hidden group bg-white/70 dark:bg-black/70 p-2 rounded-full backdrop-blur-md border-2 border-black dark:border-white transition-all duration-300 w-10 hover:w-[160px] md:hover:w-[200px] overflow-hidden shadow-lg box-border">
+                    <div class="w-5 h-5 flex items-center justify-center flex-shrink-0 ml-0.5">
+                        <svg class="w-5 h-5 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                    </div>
+                    <input type="range" id="focus-video-vol" min="0" max="100" value="100" class="flex-1 min-w-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer accent-black dark:accent-white ml-2 mr-2" style="--percent: 100%;">
+                </div>
                 <button id="btn-toggle-focus-todo" class="hidden min-[1000px]:block absolute top-4 right-4 z-20 px-5 py-2 border-2 border-black dark:border-white rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white bg-white dark:bg-black shadow-md">To-do List</button>
                 <div id="focus-layout-container" class="flex flex-row w-full h-full items-stretch justify-center">
                     <div id="focus-clock-side" class="flex flex-col items-center justify-center w-full transition-[width] duration-300 ease-out shrink-0 relative overflow-hidden max-[849px]:!w-full">
-                        <div id="focus-input-wrapper" class="w-fit max-w-[95vw] md:max-w-3xl max-h-[83dvh] border-4 border-black dark:border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 flex flex-col items-center shrink-0 mx-auto bg-white dark:bg-black relative z-10 box-border">
-                            <h2 class="text-2xl md:text-3xl font-bold uppercase mb-4 md:mb-6 opacity-80 tracking-widest text-center shrink-0">Study Focus</h2>
-                            
-                            <div class="flex flex-col gap-4 md:gap-6 w-full flex-1 overflow-y-auto no-scrollbar py-2">
-                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Focus Time</label><div class="flex items-center gap-2"><input type="number" inputmode="numeric" id="focus-h" value="0" min="0" max="99" class="w-14 h-14 md:w-20 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"> <span class="text-2xl md:text-3xl font-bold">:</span> <input type="number" inputmode="numeric" id="focus-m" value="25" min="0" max="59" class="w-14 h-14 md:w-20 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div></div>
-                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Break Time</label><input type="number" inputmode="numeric" id="focus-bm" value="5" min="0" max="99" class="w-20 h-14 md:w-28 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
-                                <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Repeats</label><input type="number" inputmode="numeric" id="focus-rep" value="3" min="1" max="15" class="w-20 h-14 md:w-28 md:h-20 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
+                        <div id="focus-input-wrapper" class="w-[95vw] md:w-[500px] h-[75dvh] md:h-[80dvh] border-4 border-black dark:border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 flex flex-col items-center shrink-0 mx-auto bg-white dark:bg-black relative z-10 box-border overflow-hidden">
+                            <h2 class="text-2xl md:text-3xl font-bold uppercase mb-4 opacity-80 tracking-widest text-center shrink-0">Study Focus</h2>
+                            <div class="flex mb-4 p-1 w-full max-w-xs mx-auto shrink-0 z-20">
+                                <button id="btn-focus-mode-manual" class="flex-1 py-2 font-bold uppercase rounded-lg bg-black text-white dark:bg-white dark:text-black focus:outline-none transition-colors">Manual</button>
+                                <button id="btn-focus-mode-video" class="flex-1 py-2 font-bold uppercase rounded-lg text-gray-500 focus:outline-none transition-colors">Pomodoro</button>
                             </div>
 
-                            <div id="focus-presets-container" class="flex flex-wrap justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-bold font-mono items-center w-full mt-4 shrink-0"></div>
-                            <button id="btn-start-focus" class="mt-6 w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 md:py-5 rounded-2xl text-lg md:text-xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:opacity-80 shrink-0">Start Focus</button>
+                            <div id="focus-manual-section" class="flex flex-col w-full flex-1 overflow-y-auto no-scrollbar py-2">
+                                <div class="flex flex-col gap-4 md:gap-6 w-full shrink-0">
+                                    <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Focus Time</label><div class="flex items-center gap-2"><input type="number" inputmode="numeric" id="focus-h" value="0" min="0" max="99" class="w-14 h-14 md:w-16 md:h-16 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"> <span class="text-2xl md:text-3xl font-bold">:</span> <input type="number" inputmode="numeric" id="focus-m" value="25" min="0" max="59" class="w-14 h-14 md:w-16 md:h-16 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div></div>
+                                    <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Break Time</label><input type="number" inputmode="numeric" id="focus-bm" value="5" min="0" max="99" class="w-14 h-14 md:w-16 md:h-16 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
+                                    <div class="flex items-center justify-between gap-4 md:gap-8 w-full"><label class="text-sm md:text-lg font-bold uppercase tracking-widest opacity-80 whitespace-nowrap">Repeats</label><input type="number" inputmode="numeric" id="focus-rep" value="3" min="1" max="15" class="w-14 h-14 md:w-16 md:h-16 border-[3px] md:border-4 border-black dark:border-white rounded-xl md:rounded-2xl text-center text-xl md:text-3xl bg-transparent focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white font-bold focus:bg-black focus:text-white dark:focus:bg-white dark:focus:text-black transition-colors"></div>
+                                </div>
+                                <div id="focus-presets-container" class="flex flex-wrap justify-center gap-2 md:gap-3 text-[10px] md:text-sm font-bold font-mono items-center w-full mt-4 shrink-0"></div>
+                                <button id="btn-start-focus" class="mt-auto w-full border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-4 md:py-5 rounded-2xl text-lg md:text-xl uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white hover:opacity-80 shrink-0">Start Focus</button>
+                            </div>
+                            <div id="focus-video-section" class="hidden flex-col w-full flex-1 overflow-y-auto no-scrollbar gap-2 py-2">
+                                <ul id="focus-video-list" class="flex flex-col gap-2"></ul>
+                            </div>
                         </div>
                         <div id="focus-display-wrapper" class="hidden relative w-full max-w-[76vmin] md:max-w-[76vmin] aspect-square flex-col items-center justify-center mx-auto z-10" style="container-type: inline-size;">
                             <svg class="absolute inset-0 w-full h-full pointer-events-none drop-shadow-sm overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><g style="transform: scaleX(1) rotate(-90deg); transform-origin: 50px 50px;"><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="1.5" class="opacity-10 dark:opacity-20"/><circle id="focus-progress" cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="301.59" stroke-dashoffset="0" class="text-black dark:text-white transition-all duration-100 ease-linear" stroke-linecap="round"/></g><circle id="focus-dot-break" cx="50" cy="2" r="3" fill="currentColor" class="text-black dark:text-white"/><circle cx="50" cy="2" r="3" fill="currentColor" class="text-black dark:text-white"/></svg>
@@ -353,7 +367,9 @@
         <div id="music-tab-yt" class="flex flex-col flex-1 min-h-0">
             <div id="media-top-section" class="w-full shrink-0 flex flex-col mb-4">
                 <div id="yt-input-group" class="w-full flex gap-2">
-                    <input type="text" id="music-url" placeholder="Paste YouTube link..." class="flex-1 w-0 bg-transparent border-2 border-gray-400 rounded-xl p-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono">
+                    <form class="flex-1 flex items-center" onsubmit="event.preventDefault(); document.getElementById('btn-load-music').click();">
+                        <input type="url" id="music-url" name="youtube_music_url" autocomplete="url" placeholder="Paste YouTube link here..." class="flex-1 w-0 bg-transparent border-2 border-gray-400 rounded-xl p-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono">
+                    </form>
                     <button id="btn-load-music" class="border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold px-4 py-3 rounded-xl text-sm uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Load</button>
                 </div>
                 <div id="playlist-warning" class="hidden text-[10px] text-red-500 font-bold tracking-widest text-center mt-2">Playlist Active: Loading new media removes queue</div>
@@ -704,6 +720,30 @@
         <li class="flex items-start gap-2 text-base leading-tight cursor-pointer hover:opacity-80 transition-opacity">
             <input type="checkbox" class="foc-task-cb mt-[6px] w-5 h-5 accent-black dark:accent-white shrink-0 cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">
             <span class="foc-task-text flex-1 break-words mt-[4px] pr-6"></span>
+        </li>
+    </template>
+    <div id="focus-video-confirm-modal" class="modal-bg fixed inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-[70] hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center p-4">
+        <div class="border-4 border-black dark:border-white bg-white dark:bg-black rounded-3xl p-6 md:p-8 w-[92%] max-w-sm shadow-2xl flex flex-col text-center">
+            <h3 class="text-xl font-bold uppercase tracking-widest mb-4 opacity-70">Video Pomodoro</h3>
+            <p id="fvc-title" class="font-bold text-lg mb-6 leading-snug"></p>
+            <div class="flex justify-around font-mono font-bold text-lg mb-8">
+                <div class="flex flex-col items-center"><span class="opacity-50 text-[10px] uppercase font-sans tracking-widest mb-1">Focus</span><span id="fvc-f"></span></div>
+                <div class="flex flex-col items-center"><span class="opacity-50 text-[10px] uppercase font-sans tracking-widest mb-1">Break</span><span id="fvc-b"></span></div>
+                <div class="flex flex-col items-center"><span class="opacity-50 text-[10px] uppercase font-sans tracking-widest mb-1">Rep</span><span id="fvc-r"></span></div>
+                <div class="flex flex-col items-center"><span class="opacity-50 text-[10px] uppercase font-sans tracking-widest mb-1">Prep</span><span id="fvc-p"></span></div>
+            </div>
+            <div class="flex gap-2">
+                <button id="btn-fvc-cancel" class="flex-1 border-4 border-black dark:border-white font-bold py-3 rounded-xl uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all focus:outline-none">Cancel</button>
+                <button id="btn-fvc-start" class="flex-[1.5] border-4 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold py-3 rounded-xl uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none">Start</button>
+            </div>
+        </div>
+    </div>
+    <template id="tpl-focus-vid-item">
+        <li class="foc-vid-item flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-colors bg-transparent border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <span class="foc-vid-icon text-xl"></span>
+                <span class="foc-vid-title text-sm font-bold opacity-80"></span>
+            </div>
         </li>
     </template>
     <script type="module" src="main.js"></script>

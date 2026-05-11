@@ -13,7 +13,6 @@ export class TodoComponent {
         this.initDOM();
         this.init();
     }
-
     initDOM() {
         this.dom = UIUtils.bindDOM({
             addCatBtn: 'btn-add-cat-new',
@@ -43,27 +42,23 @@ export class TodoComponent {
             confirmCancel: 'btn-todo-confirm-cancel'
         });
     }
-
     init() {
         this.dom.addCatBtn?.addEventListener('click', () => { const id = state.addTodoCat(); this.openCat(id); setTimeout(() => this.dom.titleInp?.focus(), 50) });
         this.dom.addTaskBtn?.addEventListener('click', () => this.addTask());
         this.dom.taskInp?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.addTask() } });
         this.dom.backBtn?.addEventListener('click', () => this.backToMain());
         this.dom.toggleFocTodoBtn?.addEventListener('click', () => this.toggleFocusTodo());
-        
         if (this.dom.sortBtn) {
             this.dom.sortBtn.addEventListener('click', () => {
                 this.currentSortDir = this.currentSortDir === 'desc' ? 'asc' : 'desc';
-                this.dom.sortBtn.innerText = this.currentSortDir === 'desc' ? '🔽' : '🔼';
+                this.dom.sortBtn.innerText = this.currentSortDir === 'desc' ? '↓' : '↑';
                 state.sortTodoCat(this.currentSortDir)
             });
         }
-        
         if (this.dom.titleInp) {
             this.dom.titleInp.addEventListener('input', e => { if (this.activeCatId) state.renameTodoCat(this.activeCatId, e.target.value) });
             this.dom.titleInp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.dom.taskInp?.focus() } });
         }
-        
         const handleCategoryClick = (e) => {
             const li = e.target.closest('li[data-id]');
             if (!li) return;
@@ -82,11 +77,9 @@ export class TodoComponent {
                 this.openCat(catId);
             }
         };
-        
         if (this.dom.pinList) this.dom.pinList.addEventListener('click', handleCategoryClick);
         if (this.dom.actList) this.dom.actList.addEventListener('click', handleCategoryClick);
         if (this.dom.cmpList) this.dom.cmpList.addEventListener('click', handleCategoryClick);
-        
         const handleTaskClick = (e) => {
             const li = e.target.closest('li[data-id]');
             if (!li || !this.activeCatId) return;
@@ -99,10 +92,8 @@ export class TodoComponent {
                 const cat = state.data.todo.find(x => x.id === this.activeCatId);
                 const task = cat.tasks.find(x => x.id === taskId);
                 task.done = !task.done;
-                
                 const cb = li.querySelector('.task-check');
                 const span = li.querySelector('.task-text');
-                
                 cb.checked = task.done;
                 if (task.done) {
                     span.classList.add('line-through', 'opacity-50');
@@ -111,15 +102,12 @@ export class TodoComponent {
                     span.classList.remove('line-through', 'opacity-50');
                     this.dom.taskList.appendChild(li);
                 }
-                
                 localStorage.setItem('todoList', JSON.stringify(state.data.todo));
                 return;
             }
         };
-        
         if (this.dom.taskList) this.dom.taskList.addEventListener('click', handleTaskClick);
         if (this.dom.cmpTaskList) this.dom.cmpTaskList.addEventListener('click', handleTaskClick);
-        
         const handleFocusClick = (e) => {
             const pinBtn = e.target.closest('.btn-focus-pin');
             if (pinBtn) {
@@ -131,34 +119,50 @@ export class TodoComponent {
             }
             const taskLi = e.target.closest('li[data-task-id]');
             if (taskLi) {
-                state.toggleTodoTask(Number(taskLi.dataset.catId), Number(taskLi.dataset.taskId));
+                const cId = Number(taskLi.dataset.catId);
+                const tId = Number(taskLi.dataset.taskId);
+                const cat = state.data.todo.find(x => x.id === cId);
+                const task = cat.tasks.find(x => x.id === tId);                
+                task.done = !task.done;
+                localStorage.setItem('todoList', JSON.stringify(state.data.todo));                
+                const cb = taskLi.querySelector('.foc-task-cb');
+                const span = taskLi.querySelector('.foc-task-text');
+                cb.checked = task.done;
+                if (task.done) {
+                    span.classList.add('line-through', 'opacity-40');
+                } else {
+                    span.classList.remove('line-through', 'opacity-40');
+                }                
+                const isCompleted = cat.tasks.every(t => t.done);
+                const catCard = taskLi.closest('.focus-cat-card');                
+                if (isCompleted) {
+                    catCard.classList.add('opacity-60', 'grayscale');
+                } else {
+                    catCard.classList.remove('opacity-60', 'grayscale');
+                }
+                this.renderSidebar();
+                if (this.activeCatId === cId) this.renderTasks();
                 return;
             }
         };
-        
         if (this.dom.focCont) this.dom.focCont.addEventListener('click', handleFocusClick);
-        
         state.subscribe('todo', () => { this.renderSidebar(); this.renderFocus() });
         this.renderFocus();
         this.renderSidebar();
-        
         document.getElementById('btn-del-all-cmp-cat')?.addEventListener('click', () => {
             this.pendingDelete = 'all-cat';
             if(this.dom.confirmMsg) this.dom.confirmMsg.innerText = "Delete all completed categories?";
             UIUtils.openModal(this.dom.confirmModal);
         });
-        
         document.getElementById('btn-del-all-cmp-task')?.addEventListener('click', () => {
             this.pendingDelete = 'all-task';
             if(this.dom.confirmMsg) this.dom.confirmMsg.innerText = "Delete all completed tasks?";
             UIUtils.openModal(this.dom.confirmModal);
         });
-        
         this.dom.confirmCancel?.addEventListener('click', () => {
             this.pendingDelete = null;
             UIUtils.closeModal(this.dom.confirmModal);
         });
-        
         this.dom.confirmYes?.addEventListener('click', () => {
             if (this.pendingDelete === 'all-cat') {
                 state.data.todo = state.data.todo.filter(c => !(c.tasks.length > 0 && c.tasks.every(t => t.done)));
@@ -175,24 +179,21 @@ export class TodoComponent {
             this.pendingDelete = null;
             UIUtils.closeModal(this.dom.confirmModal);
         });
+        this.initSortable();
     }
-
     initSortable() {
         this.catSortables.forEach(s => s.destroy());
         this.taskSortables.forEach(s => s.destroy());
         this.catSortables = [];
         this.taskSortables = [];
         if (typeof Sortable === 'undefined') return;
-        
         [this.dom.pinList, this.dom.actList].forEach(el => {
             if (el) this.catSortables.push(Sortable.create(el, { handle: '.cat-drag-handle', animation: 150, delay: window.innerWidth < 1000 ? 200 : 0, delayOnTouchOnly: true, onEnd: () => this.syncCatOrder() }))
         });
-        
         [this.dom.taskList, this.dom.cmpTaskList].forEach(el => {
             if (el) this.taskSortables.push(Sortable.create(el, { handle: '.task-drag-handle', animation: 150, delay: window.innerWidth < 1000 ? 200 : 0, delayOnTouchOnly: true, onEnd: () => this.syncTaskOrder() }))
         });
     }
-
     syncCatOrder() {
         const newOrder = [];
         document.querySelectorAll('#todo-category-pinned-list li, #todo-category-list li, #todo-category-completed-list li').forEach(li => {
@@ -205,7 +206,6 @@ export class TodoComponent {
             state.notify('todo')
         }
     }
-
     syncTaskOrder() {
         const cat = state.data.todo.find(x => x.id === this.activeCatId);
         if (!cat) return;
@@ -220,28 +220,22 @@ export class TodoComponent {
             state.notify('todo')
         }
     }
-
     addTask() {
         if (this.dom.taskInp && this.dom.taskInp.value.trim() && this.activeCatId) {
             const text = this.dom.taskInp.value.trim();
             const newTask = { id: Date.now(), text, done: false };
             const cat = state.data.todo.find(x => x.id === this.activeCatId);
-            
             cat.tasks.unshift(newTask);
             localStorage.setItem('todoList', JSON.stringify(state.data.todo));
-
             const t = document.getElementById('tpl-todo-task').content.cloneNode(true);
             const li = t.querySelector('li');
             li.dataset.id = newTask.id;
-            
             t.querySelector('.task-check').checked = false;
             t.querySelector('.task-text').textContent = newTask.text;
-            
             this.dom.taskList.prepend(t);
             this.dom.taskInp.value = '';
         }
     }
-
     backToMain() {
         this.activeCatId = null;
         if (this.dom.mainView) {
@@ -256,7 +250,6 @@ export class TodoComponent {
         state.data.todo = state.data.todo.filter(c => c.title.trim() !== '' || c.tasks.length > 0);
         state.notify('todo')
     }
-
     openCat(id) {
         this.activeCatId = id;
         const cat = state.data.todo.find(x => x.id === id);
@@ -272,7 +265,6 @@ export class TodoComponent {
         if (this.dom.backBtn) this.dom.backBtn.classList.remove('hidden');
         this.renderTasks()
     }
-
     toggleFocusTodo() {
         this.isFocusTodoOpen = !this.isFocusTodoOpen;
         if (this.dom.focSide && this.dom.focClock) {
@@ -289,7 +281,6 @@ export class TodoComponent {
             }
         }
     }
-
     renderSidebar() {
         if (!this.dom.pinList || !this.dom.actList || !this.dom.cmpList) return;
         this.dom.pinList.innerHTML = '';
@@ -299,7 +290,6 @@ export class TodoComponent {
         const fragPin = document.createDocumentFragment();
         const fragAct = document.createDocumentFragment();
         const fragCmp = document.createDocumentFragment();
-        
         state.data.todo.forEach(c => {
             const isCompleted = c.tasks.length > 0 && c.tasks.every(t => t.done);
             const t = document.getElementById('tpl-todo-cat').content.cloneNode(true);
@@ -323,11 +313,9 @@ export class TodoComponent {
             else if (c.pinned) { fragPin.appendChild(t); pinC++ }
             else { fragAct.appendChild(t); actC++ }
         });
-        
         this.dom.pinList.appendChild(fragPin);
         this.dom.actList.appendChild(fragAct);
         this.dom.cmpList.appendChild(fragCmp);
-        
         const emptyMsg = document.getElementById('todo-empty-msg');
         if (pinC === 0 && actC === 0 && cmpC === 0) {
             if (!emptyMsg && this.dom.mainView) {
@@ -343,10 +331,8 @@ export class TodoComponent {
         if (this.dom.pinSec) this.dom.pinSec.classList.toggle('hidden', pinC === 0);
         if (this.dom.actSec) this.dom.actSec.classList.toggle('hidden', actC === 0);
         if (this.dom.cmpSec) this.dom.cmpSec.classList.toggle('hidden', cmpC === 0);
-        this.initSortable();
         if (this.activeCatId) this.renderTasks();
     }
-
     renderTasks() {
         if (!this.dom.taskList || !this.dom.cmpTaskList) return;
         this.dom.taskList.innerHTML = '';
@@ -356,7 +342,6 @@ export class TodoComponent {
         if (!cat) return;
         const fragTask = document.createDocumentFragment();
         const fragCmpTask = document.createDocumentFragment();
-        
         cat.tasks.forEach(tk => {
             const t = document.getElementById('tpl-todo-task').content.cloneNode(true);
             const li = t.querySelector('li');
@@ -369,13 +354,10 @@ export class TodoComponent {
             if (tk.done) { fragCmpTask.appendChild(t); cmpC++ }
             else { fragTask.appendChild(t) }
         });
-        
         this.dom.taskList.appendChild(fragTask);
         this.dom.cmpTaskList.appendChild(fragCmpTask);
         if (this.dom.cmpTaskSec) this.dom.cmpTaskSec.classList.toggle('hidden', cmpC === 0);
-        this.initSortable();
     }
-
     renderFocus() {
         if (!this.dom.focCont) return;
         this.dom.focCont.innerHTML = '';
@@ -412,17 +394,13 @@ export class TodoComponent {
                 const li = taskClone.querySelector('li');
                 li.dataset.taskId = tk.id;
                 li.dataset.catId = c.id;
-                
                 const cb = taskClone.querySelector('.foc-task-cb');
                 if (tk.done) cb.checked = true;
-                
                 const span = taskClone.querySelector('.foc-task-text');
                 span.textContent = tk.text;
                 if (tk.done) span.classList.add('line-through', 'opacity-40');
-                
                 ul.appendChild(taskClone);
             });
-            
             fragFocus.appendChild(catClone);
         });
         if (!hasContent) {

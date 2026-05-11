@@ -218,12 +218,9 @@ export class GlobalController {
         this.playBeep();
         this.alertInterval = UIUtils.clearTask(this.alertInterval);
         this.alertInterval = setInterval(() => this.playBeep(), 1000);
-        if (!revisit && document.hidden && "Notification" in window && Notification.permission === "granted") {
-            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                navigator.serviceWorker.ready.then(r => r.showNotification(t, { body: m, icon: 'study-clock.png', vibrate: [200, 100, 200], tag: 'study-alert' })).catch(() => new Notification(t, { body: m }))
-            } else {
-                new Notification(t, { body: m })
-            }
+        if (!revisit && "Notification" in window && Notification.permission === "granted") {
+            try { new Notification(t, { body: m, icon: 'study-clock.png' }); } 
+            catch (e) { if (navigator.serviceWorker) navigator.serviceWorker.ready.then(r => r.showNotification(t, { body: m, icon: 'study-clock.png', vibrate: [200, 100, 200], tag: 'study-alert' })).catch(()=>{}); }
         }
         if (app.musicPlayer) {
             if (app.musicPlayer.ytPlayer && typeof app.musicPlayer.ytPlayer.setVolume === 'function') app.musicPlayer.ytPlayer.setVolume(Math.max(5, Math.floor(app.musicPlayer.mediaVol * 0.2)));
@@ -244,14 +241,14 @@ export class GlobalController {
     }
     exportData() {
         const data = {
-             alarms: UIUtils.getSafeData('alarms', []),
-             countdowns: UIUtils.getSafeData('countdowns', []),
-             timerPresets: UIUtils.getSafeData('timerPresets', []),
-             focusPresets: UIUtils.getSafeData('focusPresets', []),
-             todoList: UIUtils.getSafeData('todoList', []),
-            ringtone: localStorage.getItem('ringtone') || 'beep',
-            mediaVol: parseInt(localStorage.getItem('mediaVol') || 100)
-        };
+             alarms: state.data.alarms,
+             countdowns: state.data.countdowns,
+             timerPresets: state.data.timerPresets,
+             focusPresets: state.data.focusPresets,
+             todoList: state.data.todo,
+             ringtone: localStorage.getItem('ringtone') || 'beep',
+             mediaVol: parseInt(localStorage.getItem('mediaVol') || 100)
+        };        
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = `study_clock_data_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); this.toast("Data exported!");
@@ -264,18 +261,35 @@ export class GlobalController {
             reader.onload = event => {
                 try {
                     const data = JSON.parse(event.target.result); if (!confirm("Merge data?")) return;
-                    const mergeArray = (key, newArr) => {
-                        if (!Array.isArray(newArr)) return; let oldArr = UIUtils.getSafeData(key, []); let merged = [...oldArr];
+                    const mergeArray = (storageKey, stateKey, newArr) => {
+                        if (!Array.isArray(newArr)) return; 
+                        let oldArr = UIUtils.getSafeData(storageKey, []); 
+                        let merged = [...oldArr];
                         newArr.forEach(newItem => {
-                            if (newItem.id) { const idx = merged.findIndex(x => x.id === newItem.id); if (idx !== -1) merged[idx] = newItem; else merged.push(newItem); }
-                            else { const strNew = JSON.stringify(newItem); if (!merged.some(x => JSON.stringify(x) === strNew)) merged.push(newItem); }
+                            if (newItem.id) { 
+                                const idx = merged.findIndex(x => x.id === newItem.id); 
+                                if (idx !== -1) merged[idx] = newItem; 
+                                else merged.push(newItem); 
+                            }
+                            else { 
+                                const strNew = JSON.stringify(newItem); 
+                                if (!merged.some(x => JSON.stringify(x) === strNew)) merged.push(newItem); 
+                            }
                         });
-                        localStorage.setItem(key, JSON.stringify(merged));
+                        state.data[stateKey] = merged;
+                        localStorage.setItem(storageKey, JSON.stringify(merged));
                     };
-                    mergeArray('alarms', data.alarms); mergeArray('countdowns', data.countdowns); mergeArray('timerPresets', data.timerPresets); mergeArray('focusPresets', data.focusPresets); mergeArray('todoList', data.todoList);
+                    mergeArray('alarms', 'alarms', data.alarms); 
+                    mergeArray('countdowns', 'countdowns', data.countdowns); 
+                    mergeArray('timerPresets', 'timerPresets', data.timerPresets); 
+                    mergeArray('focusPresets', 'focusPresets', data.focusPresets); 
+                    mergeArray('todoList', 'todo', data.todoList);
+                    
                     if (data.ringtone) localStorage.setItem('ringtone', data.ringtone);
                     if (data.mediaVol !== undefined) localStorage.setItem('mediaVol', data.mediaVol);
-                    this.toast("Complete! Loading data..."); setTimeout(() => window.location.reload(), 1500);
+                    
+                    this.toast("Complete! Loading data..."); 
+                    setTimeout(() => window.location.reload(), 1500);
                 } catch (err) { this.toast("Invalid data!"); }
             };
             reader.readAsText(file);
