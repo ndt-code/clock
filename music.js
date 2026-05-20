@@ -210,6 +210,211 @@ export class MusicPlayer {
             };
         }
         window.addEventListener('app:togglePlay', this.togglePlayHandler);
+        const miniToggle = document.getElementById('btn-music-mini-toggle');
+        const miniPlayer = document.getElementById('music-mini-player');
+        const miniPlayBtn = document.getElementById('btn-mini-play');
+        const miniPrevBtn = document.getElementById('btn-mini-prev');
+        const miniNextBtn = document.getElementById('btn-mini-next');
+        const miniLoopBtn = document.getElementById('btn-mini-loop');
+        const miniShuffleBtn = document.getElementById('btn-mini-shuffle');
+        const miniTitle = document.getElementById('mini-track-title');
+        const miniStatus = document.getElementById('mini-track-status');
+        const miniNextTitle = document.getElementById('mini-next-title');
+        const iconMiniPlay = document.getElementById('icon-mini-play');
+        const iconMiniPause = document.getElementById('icon-mini-pause');
+        const miniMarquee = document.getElementById('mini-marquee-wrapper');
+        let isMiniOpen = false;
+        let marqueeInners = [];
+        let marqueeRafId = null;
+        if (miniToggle && miniPlayer) {
+            miniToggle.onclick = (e) => {
+                e.stopPropagation();
+                isMiniOpen = !isMiniOpen;
+                if (isMiniOpen) {
+                    miniPlayer.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+                    miniPlayer.classList.add('pointer-events-auto', 'opacity-100', 'scale-100');                    
+                    if (marqueeRafId) cancelAnimationFrame(marqueeRafId);
+                    marqueeInners = [];                    
+                    miniPlayer.querySelectorAll('.mini-marquee-inner').forEach(inner => {
+                        const container = inner.parentElement;
+                        const textWidth = inner.offsetWidth;
+                        const containerWidth = container.offsetWidth;
+                        
+                        marqueeInners.push({
+                            el: inner,
+                            textW: textWidth,
+                            containerW: containerWidth,
+                            currentX: 0,
+                            loops: 0,
+                            done: false
+                        });
+                    });
+                    const updateMarquee = () => {
+                        let allDone = true;
+                        marqueeInners.forEach(m => {
+                            if (m.done || m.textW <= m.containerW) return;
+                            allDone = false;
+
+                            m.currentX -= 0.6;
+
+                            if (m.currentX <= -m.textW) {
+                                m.loops++;
+                                if (m.loops >= 3) {
+                                    m.currentX = m.containerW;
+                                } else {
+                                    m.currentX = m.containerW;
+                                }
+                            }
+
+                            if (m.loops >= 3 && m.currentX <= 0 && m.currentX >= -2) {
+                                m.currentX = 0;
+                                m.done = true;
+                            }
+
+                            m.el.style.transform = `translate3d(${m.currentX}px, 0, 0)`;
+                        });
+
+                        if (!allDone) {
+                            marqueeRafId = requestAnimationFrame(updateMarquee);
+                        }
+                    };
+                    marqueeRafId = requestAnimationFrame(updateMarquee);
+                } else {
+                    miniPlayer.classList.remove('pointer-events-auto', 'opacity-100', 'scale-100');
+                    miniPlayer.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+                    if (marqueeRafId) cancelAnimationFrame(marqueeRafId);
+                }
+            };
+            document.addEventListener('click', (e) => {
+                if (isMiniOpen && !miniPlayer.contains(e.target) && !miniToggle.contains(e.target)) {
+                    isMiniOpen = false;
+                    miniPlayer.classList.remove('pointer-events-auto', 'opacity-100', 'scale-100');
+                    miniPlayer.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+                }
+            });
+            miniPlayer.onclick = () => {
+                if (this.queue.length === 0) {
+                    this.togglePanel(true);
+                }
+            };
+        }
+
+        if (miniPlayBtn) {
+            miniPlayBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (this.queue.length > 0) {
+                    this.playPause();
+                } else {
+                    this.togglePanel(true);
+                }
+            };
+        }
+
+        if (miniPrevBtn) {
+            miniPrevBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (this.queue.length > 0 && this.currIdx > 0) {
+                    this.playTrack(this.currIdx - 1);
+                } else if (this.queue.length > 0) {
+                    this.togglePanel(true);
+                }
+            };
+        }
+
+        if (miniNextBtn) {
+            miniNextBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (this.queue.length > 0 && this.currIdx < this.queue.length - 1) {
+                    this.playTrack(this.currIdx + 1);
+                } else if (this.queue.length > 0 && this.loopMode === 1) {
+                    this.playTrack(0);
+                } else if (this.queue.length === 0) {
+                    this.togglePanel(true);
+                }
+            };
+        }
+
+        if (miniLoopBtn) {
+            miniLoopBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (!this.queue.length) {
+                    this.togglePanel(true);
+                    return;
+                }
+                this.loopMode = (this.loopMode + 1) % 3;
+                if (this.dom.bLoop) {
+                    this.dom.bLoop.innerHTML = this.loopMode === 0 ? this.icL : (this.loopMode === 1 ? this.icLa : this.icL1a);
+                    this.dom.bLoop.classList.toggle('opacity-50', this.loopMode === 0);
+                    this.dom.bLoop.classList.toggle('opacity-100', this.loopMode !== 0);
+                }
+            };
+        }
+
+        if (miniShuffleBtn) {
+            miniShuffleBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (!this.queue.length) {
+                    this.togglePanel(true);
+                    return;
+                }
+                this.toggleShuffle();
+            };
+        }
+
+        setInterval(() => {
+            if (!miniPlayer) return;
+            if (this.queue.length > 0 && this.currIdx >= 0 && this.currIdx < this.queue.length) {
+                const currentTrack = this.queue[this.currIdx];
+                if (miniTitle.innerText !== currentTrack.title) {
+                    miniTitle.innerText = currentTrack.title || "LOADING...";
+                }
+                let nextIdx = this.currIdx + 1;
+                if (nextIdx < this.queue.length) {
+                    miniNextTitle.innerText = "Next: " + (this.queue[nextIdx].title || "Loading...");
+                } else if (this.loopMode === 1) {
+                    miniNextTitle.innerText = "Next: " + (this.queue[0].title || "Loading...");
+                } else {
+                    miniNextTitle.innerText = "Next: None";
+                }
+            } else {
+                miniTitle.innerText = "NO SONG";
+                miniNextTitle.innerText = "Next: None";
+            }
+            if (miniLoopBtn) {
+                miniLoopBtn.innerHTML = this.loopMode === 0 ? this.icL : (this.loopMode === 1 ? this.icLa : this.icL1a);
+                miniLoopBtn.classList.toggle('opacity-40', this.loopMode === 0);
+                miniLoopBtn.classList.toggle('opacity-100', this.loopMode !== 0);
+            }
+            if (miniShuffleBtn) {
+                miniShuffleBtn.classList.toggle('opacity-40', !this.isShuffle);
+                miniShuffleBtn.classList.toggle('opacity-100', this.isShuffle);
+            }
+            if (this.ytPlayer && typeof this.ytPlayer.getPlayerState === 'function') {
+                const state = this.ytPlayer.getPlayerState();
+                if (state === 1) {
+                    miniStatus.innerText = "PLAYING";
+                    iconMiniPlay.classList.add('hidden');
+                    iconMiniPause.classList.remove('hidden');
+                } else if (state === 3) {
+                    miniStatus.innerText = "BUFFERING";
+                    iconMiniPlay.classList.add('hidden');
+                    iconMiniPause.classList.remove('hidden');
+                } else if (state === 5 || state === -1) {
+                    miniStatus.innerText = "PREP";
+                    iconMiniPlay.classList.remove('hidden');
+                    iconMiniPause.classList.add('hidden');
+                } else {
+                    miniStatus.innerText = "PAUSED";
+                    iconMiniPlay.classList.remove('hidden');
+                    iconMiniPause.classList.add('hidden');
+                }
+            } else {
+                miniStatus.innerText = "PREP";
+                iconMiniPlay.classList.remove('hidden');
+                iconMiniPause.classList.add('hidden');
+            }
+        }, 500);
+
         this.render();
         this.renderWnList();
     }
@@ -506,7 +711,7 @@ export class MusicPlayer {
     onState(e) {
         if (this.fetching && this.ytPlayer.getPlaylist && this.ytPlayer.getPlaylist().length > 0) {
             this.fetching = false; this.queue = this.ytPlayer.getPlaylist().map((id, i) => ({ id, title: `Track ${i + 1}` })); this.originalQueue = [...this.queue];
-            this.enqueueTitles(this.queue); this.currIdx = 0; if (this.dom.stat) this.dom.stat.innerText = ""; if (this.dom.tl) this.dom.tl.classList.remove('pointer-events-none');
+            this.enqueueTitles(this.queue); this.currIdx = 0; if (this.dom.stat) this.dom.stat.innerText = ""; if (this.dom.tl) { this.dom.tl.classList.remove('pointer-events-none'); }
             this.render(); this.playTrack(0); return;
         }
         if (this.fetching) return;
@@ -558,7 +763,7 @@ export class MusicPlayer {
         if (!this.queue.length) {
             if (this.dom.warn) this.dom.warn.classList.add('hidden'); this.dom.pl.innerHTML = '<li class="text-xs opacity-50 py-2 text-center">Queue empty</li>';
             if (this.dom.tl) this.dom.tl.classList.add('pointer-events-none');
-            if (this.dom.bVid) { this.dom.bVid.classList.add('opacity-20', 'pointer-events-none'); this.dom.bVid.classList.remove('opacity-50', 'hover:opacity-100'); }
+            if (this.dom.bVid) { this.dom.bVid.classList.add('opacity-20', 'pointer-events-none'); this.dom.bVid.classList.remove('opacity-50', 'opacity-100', 'hover:opacity-100'); }
             if (this.dom.bLoop) { this.dom.bLoop.classList.add('opacity-20', 'pointer-events-none'); this.dom.bLoop.classList.remove('opacity-50', 'opacity-100', 'hover:opacity-100'); }
             if (this.dom.bShuffle) { this.dom.bShuffle.classList.add('opacity-20', 'pointer-events-none'); this.dom.bShuffle.classList.remove('opacity-50', 'opacity-100', 'hover:opacity-100'); }
             if (this.dom.bClear) { this.dom.bClear.classList.add('opacity-20', 'pointer-events-none'); this.dom.bClear.classList.remove('opacity-50', 'hover:opacity-100'); }

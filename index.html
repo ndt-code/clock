@@ -320,6 +320,58 @@
             </section>
         </div>
     </main>
+    <div class="hidden xl:block fixed bottom-6 right-6 z-50">
+        <div class="relative w-10 h-10">
+            <button id="btn-music-mini-toggle" class="w-10 h-10 text-black dark:text-white transition-all transform active:scale-95 opacity-60 hover:opacity-100 focus:outline-none flex items-center justify-center" title="Quick Player">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                </svg>
+            </button>
+            <div id="music-mini-player" class="absolute bottom-0 right-0 w-80 bg-white/80 dark:bg-black/80 backdrop-blur-2xl p-4 border-[3px] border-black dark:border-white rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-none opacity-0 scale-95 origin-bottom-right transition-all duration-300 flex flex-col gap-3.5 text-black dark:text-white">
+                <div class="flex items-center gap-4 w-full">
+                    <div class="w-12 h-12 rounded-2xl bg-black text-white dark:bg-white dark:text-black flex items-center justify-center shrink-0 border border-black/10 shadow-sm">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="2" y="10" width="2.5" height="4" opacity="0.4"><animate attributeName="height" values="4;14;4" dur="1s" repeatCount="indefinite"/><animate attributeName="y" values="10;5;10" dur="1s" repeatCount="indefinite"/></rect>
+                            <rect x="7" y="6" width="2.5" height="12"><animate attributeName="height" values="12;4;12" dur="0.8s" repeatCount="indefinite"/><animate attributeName="y" values="6;10;6" dur="0.8s" repeatCount="indefinite"/></rect>
+                            <rect x="12" y="8" width="2.5" height="8" opacity="0.8"><animate attributeName="height" values="8;16;8" dur="1.2s" repeatCount="indefinite"/><animate attributeName="y" values="8;4;8" dur="1.2s" repeatCount="indefinite"/></rect>
+                            <rect x="17" y="11" width="2.5" height="2" opacity="0.5"><animate attributeName="height" values="2;10;2" dur="0.9s" repeatCount="indefinite"/><animate attributeName="y" values="11;7;11" dur="0.9s" repeatCount="indefinite"/></rect>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0 overflow-hidden">
+                        <div class="mini-marquee-container w-full overflow-hidden relative h-6">
+                            <div class="mini-marquee-inner inline-block whitespace-nowrap absolute left-0 top-0">
+                                <span id="mini-track-title" class="text-base font-bold tracking-wide uppercase font-oswald">NO SONG</span>
+                            </div>
+                        </div>
+                        <p id="mini-track-status" class="text-[10px] font-sans font-bold opacity-50 tracking-widest uppercase mt-0.5">PREP</p>
+                    </div>
+                </div>
+                <div class="mini-marquee-container w-full overflow-hidden relative h-6 border-t border-black/10 dark:border-white/10 pt-1.5 mt-0.5">
+                    <div class="mini-marquee-inner inline-block whitespace-nowrap absolute left-0 top-0 opacity-90">
+                        <span id="mini-next-title" class="text-[11px] font-mono font-bold text-black/80 dark:text-white/90 tracking-wider">Next: None</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between w-full border-t border-black/5 dark:border-white/5 pt-2">
+                    <button id="btn-mini-loop" class="w-9 h-9 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-colors focus:outline-none opacity-40 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                    <button id="btn-mini-prev" class="w-9 h-9 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-colors focus:outline-none shrink-0">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 6l-8.5 6 8.5 6V6zm-10 0h-2v12h2V6z"/></svg>
+                    </button>
+                    <button id="btn-mini-play" class="w-9 h-9 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-colors focus:outline-none shrink-0">
+                        <svg id="icon-mini-play" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"></path></svg>
+                        <svg id="icon-mini-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"></path></svg>
+                    </button>
+                    <button id="btn-mini-next" class="w-9 h-9 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-colors focus:outline-none shrink-0">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
+                    </button>
+                    <button id="btn-mini-shuffle" class="w-9 h-9 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition-colors focus:outline-none opacity-40 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <nav id="mobile-nav" class="view-mob w-full flex justify-around items-center bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 pb-safe z-30 shrink-0">
         <button class="tab-btn flex-1 py-3 min-h-[56px] flex flex-col items-center justify-center gap-1 text-black dark:text-white focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white" data-target="tab-clock">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -368,7 +420,7 @@
             <div id="media-top-section" class="w-full shrink-0 flex flex-col mb-4">
                 <div id="yt-input-group" class="w-full flex gap-2">
                     <form class="flex-1 flex items-center" onsubmit="event.preventDefault(); document.getElementById('btn-load-music').click();">
-                        <input type="url" id="music-url" name="youtube_music_url" autocomplete="url" placeholder="Paste YouTube link here..." class="flex-1 w-0 bg-transparent border-2 border-gray-400 rounded-xl p-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono">
+                        <input type="url" id="music-url" name="youtube_music_url" autocomplete="on" placeholder="Paste YouTube link here..." class="flex-1 w-0 bg-transparent border-2 border-gray-400 rounded-xl p-3 text-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white focus:border-black dark:focus:border-white font-mono">
                     </form>
                     <button id="btn-load-music" class="border-2 border-black dark:border-white bg-black text-white dark:bg-white dark:text-black font-bold px-4 py-3 rounded-xl text-sm uppercase tracking-widest hover:opacity-80 transition-all focus:outline-none focus-visible:ring-4 focus-visible:ring-black dark:focus-visible:ring-white">Load</button>
                 </div>
